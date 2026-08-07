@@ -1,0 +1,235 @@
+@import "tailwindcss";
+
+@theme {
+  /* --- Färg --- */
+  --color-void: #050505;
+  --color-surface: #0d0d0f;
+  --color-surface-2: #141417;
+  --color-line: rgba(245, 245, 240, 0.09);
+  --color-line-strong: rgba(245, 245, 240, 0.18);
+  --color-ink: #f5f5f0;
+  --color-muted: #8a8a85;
+  /* Höjd från #56564f (2.76:1 mot --color-void, underkänt). --color-dim bär
+     enbart småtext — år, numrering, etiketter — och måste därför nå 4.5:1 mot
+     den mörkaste ytan den används på (--color-surface-2). #80807a ger 5.13:1
+     mot void och 4.62:1 mot surface-2. */
+  --color-dim: #80807a;
+  --color-accent: #00e5ff;
+  --color-accent-dim: rgba(0, 229, 255, 0.14);
+
+  /* --- Typsnitt --- */
+  --font-display: var(--font-display), "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+
+  /* --- Rörelse --- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+:root {
+  --shell: clamp(1.25rem, 5vw, 5rem);
+  color-scheme: dark;
+}
+
+* {
+  min-width: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-void);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Lenis behöver detta för att inte krocka med native scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-void);
+}
+
+/* --- Fokus: alltid synligt, aldrig bortstylat --- */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* --- Typografiska hjälpklasser --- */
+@utility shell {
+  padding-inline: var(--shell);
+  margin-inline: auto;
+  max-width: 96rem;
+}
+
+@utility display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 12vw, 11rem);
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  font-weight: 500;
+}
+
+@utility display-lg {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 6.5vw, 5.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  font-weight: 500;
+}
+
+@utility display-md {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.6vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  font-weight: 500;
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+@utility lede {
+  font-size: clamp(1.0625rem, 1.5vw, 1.375rem);
+  line-height: 1.55;
+  color: var(--color-muted);
+  max-width: 46ch;
+}
+
+@utility hairline {
+  border-top: 1px solid var(--color-line);
+}
+
+/* --- Reveal-primitiv, drivs av GSAP eller IntersectionObserver --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(1.75rem);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.9s var(--ease-out-expo),
+    transform 0.9s var(--ease-out-expo);
+}
+
+.reveal-line {
+  display: block;
+  overflow: hidden;
+}
+.reveal-line > span {
+  display: block;
+  transform: translateY(105%);
+  transition: transform 1s var(--ease-out-expo);
+}
+.is-in .reveal-line > span,
+.reveal-line.is-in > span {
+  transform: none;
+}
+
+/* --- Glöd, sparsamt använd --- */
+@utility glow {
+  box-shadow:
+    0 0 0 1px var(--color-line),
+    0 0 60px -20px var(--color-accent-dim);
+}
+
+/* --- Case-öppning via View Transitions ---------------------------------
+   Kortets bildyta och casesidans hero delar `view-transition-name`, så
+   browsern morfar den ena till den andra medan sidan byts under. Namnet
+   sätts i JS på det klickade kortet (se ProjectCard) och ligger fast på
+   hero-bandet nedan. Bara ett element åt gången får bära namnet.
+   Övergången startas aldrig vid prefers-reduced-motion — se
+   `lib/viewTransition.ts` — så all rörelse här är opt-in.               */
+
+.case-hero {
+  view-transition-name: case-media;
+}
+
+/* Gruppen som flyttar och skalar: bild → fullskärm. */
+::view-transition-group(case-media) {
+  animation-duration: 760ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+/* Utan detta sträcks ögonblicksbilderna när proportionerna ändras. */
+::view-transition-old(case-media),
+::view-transition-new(case-media) {
+  height: 100%;
+  overflow: clip;
+  object-fit: cover;
+  animation-duration: 760ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+/* Resten av sidan korsar under bilden, aldrig över den. */
+html[data-case-transition]::view-transition-old(root),
+html[data-case-transition]::view-transition-new(root) {
+  animation-duration: 620ms;
+  animation-timing-function: var(--ease-in-out-quart);
+}
+html[data-case-transition]::view-transition-new(root) {
+  animation-delay: 90ms;
+}
+
+/* --- Custom cursor: dölj systemcursorn bara när vår egen är aktiv --- */
+body[data-cursor="on"],
+body[data-cursor="on"] a,
+body[data-cursor="on"] button {
+  cursor: none;
+}
+
+/* --- Respektera reducerad rörelse: allt statiskt, inget döljs --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal,
+  .reveal-line > span {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  body[data-cursor="on"],
+  body[data-cursor="on"] a,
+  body[data-cursor="on"] button {
+    cursor: auto;
+  }
+  /* Skulle en övergång ändå startas (t.ex. via bakåtknappen i en browser med
+     cross-document-stöd) ska den vara omedelbar, inte animerad. */
+  ::view-transition-group(case-media),
+  ::view-transition-old(case-media),
+  ::view-transition-new(case-media),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}

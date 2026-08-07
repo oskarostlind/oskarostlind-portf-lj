@@ -1,0 +1,223 @@
+{
+  "meta": {
+    "name": "Oskar Östlind",
+    "role": "Web developer",
+    "siteTitle": "Oskar Östlind — Web developer",
+    "defaultDescription": "I build complete digital solutions: websites, frontend, backend and CRM. From first sketch to shipped system.",
+    "home": {
+      "title": "Oskar Östlind — I build digital experiences that sell",
+      "description": "Web developer building complete digital solutions. Websites, frontend, backend and CRM — from first sketch to shipped system."
+    },
+    "work": {
+      "title": "Work",
+      "description": "Selected projects: SaaS products, client websites, automation tools and native apps."
+    },
+    "services": {
+      "title": "Services",
+      "description": "Complete websites, frontend, backend and APIs, plus CRM systems and integrations."
+    },
+    "about": {
+      "title": "About",
+      "description": "Who I am, how I work and the tools I use."
+    },
+    "contact": {
+      "title": "Contact",
+      "description": "Tell me what you want to build and I'll reply within a day."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "work": "Work",
+    "services": "Services",
+    "about": "About",
+    "contact": "Contact",
+    "menu": "Menu",
+    "close": "Close",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "skipToContent": "Skip to content",
+    "language": "Language",
+    "switchTo": "Switch to Swedish"
+  },
+  "preloader": {
+    "label": "Loading"
+  },
+  "hero": {
+    "eyebrow": "Web developer · Sweden",
+    "titleLine1": "I build",
+    "titleLine2": "digital experiences",
+    "titleLine3": "that sell",
+    "subtitle": "Websites, frontend, backend and CRM. From first sketch to shipped system.",
+    "ctaWork": "See my work",
+    "ctaContact": "Book a call",
+    "scroll": "Scroll"
+  },
+  "manifest": {
+    "eyebrow": "What I do",
+    "body": "Most people can build a page that looks good. Fewer build something that still works when a thousand people use it at once, when the payment has to clear, when the email has to arrive. I build the whole chain — the interface, the database, the login, the billing and the deployment.",
+    "signature": "Oskar Östlind"
+  },
+  "work": {
+    "eyebrow": "Selected work",
+    "title": "Things I've built",
+    "intro": "From NFC-linked SaaS products to client sites that actually generate enquiries.",
+    "viewAll": "See all work",
+    "viewCase": "Read the case",
+    "visitSite": "Visit site",
+    "viewCode": "View code",
+    "allTitle": "Work",
+    "allIntro": "Seven projects, from fast client sites to platforms with payment flows and native apps.",
+    "filterAll": "All",
+    "filterLabel": "Filter projects",
+    "empty": "No projects match this filter.",
+    "nextCase": "Next case",
+    "backToWork": "Back to work",
+    "theChallenge": "The brief",
+    "whatIBuilt": "What I built",
+    "techStack": "Stack",
+    "year": "Year",
+    "role": "Role",
+    "roleValue": "Design, frontend, backend and deployment"
+  },
+  "services": {
+    "eyebrow": "Services",
+    "title": "What you can commission",
+    "intro": "Four ways to work with me. Not sure which one you need — get in touch and we'll work it out.",
+    "learnMore": "Learn more",
+    "whoFor": "Best for",
+    "timeline": "Typical timeline",
+    "items": {
+      "websites": {
+        "title": "Complete websites",
+        "summary": "From blank page to a live site with its own domain, forms and analytics.",
+        "detail": "I handle everything: structure, design, content setup, development, accessibility, SEO and deployment. If you want to edit the copy yourself, I set up a CMS.",
+        "who": "Businesses that need a site which brings in customers, not one that merely exists.",
+        "timeline": "2–5 weeks"
+      },
+      "frontend": {
+        "title": "Frontend",
+        "summary": "Interfaces that feel fast, accessible and considered in every detail.",
+        "detail": "React and Next.js with TypeScript. Animation where it adds something, never for its own sake. Accessibility and Core Web Vitals are built-in requirements, not afterthoughts.",
+        "who": "Teams with design or backend in place that need the interface built properly.",
+        "timeline": "1–4 weeks"
+      },
+      "backend": {
+        "title": "Backend & API",
+        "summary": "Databases, authentication, payment flows and integrations that hold up.",
+        "detail": "PostgreSQL with Prisma or Drizzle, authentication with NextAuth, payments through Stripe, transactional email, scheduled jobs and webhooks. Built to still be debuggable in a year.",
+        "who": "Products that need more than a contact form behind them.",
+        "timeline": "2–8 weeks"
+      },
+      "crm": {
+        "title": "CRM & integrations",
+        "summary": "Systems that get your tools talking to each other instead of creating double work.",
+        "detail": "Custom admin panels, customer databases, automated flows and connections to the services you already use. This is often where the biggest time saving hides.",
+        "who": "Teams spending hours a week moving data by hand.",
+        "timeline": "3–10 weeks"
+      }
+    }
+  },
+  "stack": {
+    "eyebrow": "Tools",
+    "title": "What I build with",
+    "intro": "Everything below sits in at least one project running in production.",
+    "hint": "Drag to rotate",
+    "hintTouch": "Swipe to explore"
+  },
+  "process": {
+    "eyebrow": "How I work",
+    "title": "Four steps, no surprises",
+    "steps": {
+      "discover": {
+        "title": "Discover",
+        "body": "We work out what you actually need, who will use it and what counts as success. You get a fixed scope and a price before anything gets built."
+      },
+      "design": {
+        "title": "Design",
+        "body": "Structure and interface take shape. You see real drafts early, not a finished site you wish you had changed from the start."
+      },
+      "build": {
+        "title": "Build",
+        "body": "Development in short cycles with continuous check-ins. You can follow the work on a staging link the whole way."
+      },
+      "launch": {
+        "title": "Launch & maintain",
+        "body": "Deployment, domain, analytics and handover. Then I stay available for whatever comes up afterwards."
+      }
+    }
+  },
+  "stats": {
+    "projects": "Projects in production",
+    "endpoints": "API endpoints built",
+    "years": "Years writing code",
+    "response": "Reply time on enquiries",
+    "responseValue": "24h"
+  },
+  "cta": {
+    "eyebrow": "Next step",
+    "title": "Tell me what you want to build",
+    "body": "A short conversation is enough to tell whether we're a fit. You'll get a clear answer on scope and price either way.",
+    "button": "Send a message",
+    "or": "or email directly"
+  },
+  "footer": {
+    "available": "Available for work",
+    "localTime": "Local time",
+    "builtBy": "Built from scratch by me — Next.js, React Three Fiber and GSAP.",
+    "rights": "All rights reserved.",
+    "backToTop": "Back to top"
+  },
+  "about": {
+    "eyebrow": "About",
+    "title": "I build things meant to last",
+    "intro": "I'm Oskar Östlind and I build complete digital solutions — from the interface people click on to the database and payment flow behind it.",
+    "body1": "I started with Python and small scripts. That grew into Flask applications with users and payments, and from there into Next.js, TypeScript and native iOS apps. That path still shows in how I work: I want to understand the whole system, not just my layer of it.",
+    "body2": "Right now I mostly build on Next.js with TypeScript, PostgreSQL and Prisma, with Stripe for payments and Capacitor when something needs to become a real app. But the tool is rarely the point — the point is that what gets built can be trusted.",
+    "body3": "I work freelance and prefer to work close to whoever is commissioning. Short distances, fast decisions and a staging link you can follow the whole way.",
+    "toolsTitle": "Tools I use",
+    "toolsIntro": "Grouped by what they do. Everything here sits in at least one project that's live.",
+    "ctaTitle": "Want to build something?",
+    "ctaBody": "Get in touch and let's talk."
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Let's talk",
+    "intro": "Tell me briefly what you want to build and I'll get back to you within a day. Unsure about scope or budget — write anyway, we'll figure it out together.",
+    "directTitle": "Direct",
+    "emailLabel": "Email",
+    "githubLabel": "GitHub",
+    "linkedinLabel": "LinkedIn",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "company": "Company",
+      "companyPlaceholder": "Optional",
+      "budget": "Rough budget",
+      "budgetPlaceholder": "Not sure yet",
+      "message": "What do you want to build?",
+      "messagePlaceholder": "Describe the project in a few sentences. The more concrete, the better the answer you'll get.",
+      "submit": "Send message",
+      "sending": "Sending…",
+      "successTitle": "Thanks — your message is on its way.",
+      "successBody": "I'll get back to you within a day.",
+      "errorTitle": "Something went wrong.",
+      "errorBody": "Try again, or email me directly at",
+      "required": "required",
+      "optional": "optional"
+    },
+    "errors": {
+      "nameShort": "Please enter your name.",
+      "emailInvalid": "Please check the email address.",
+      "messageShort": "Write a few lines about what you want to build.",
+      "rateLimit": "You've sent a message recently. Please wait a moment and try again.",
+      "server": "The message couldn't be sent right now."
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The link may be outdated or misspelled.",
+    "cta": "Back to home"
+  }
+}

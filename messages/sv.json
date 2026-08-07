@@ -1,0 +1,223 @@
+{
+  "meta": {
+    "name": "Oskar Östlind",
+    "role": "Webbutvecklare",
+    "siteTitle": "Oskar Östlind — Webbutvecklare",
+    "defaultDescription": "Jag bygger kompletta digitala lösningar: hemsidor, frontend, backend och CRM. Från första skiss till driftsatt system.",
+    "home": {
+      "title": "Oskar Östlind — Jag bygger digitala upplevelser som säljer",
+      "description": "Webbutvecklare som bygger kompletta digitala lösningar. Hemsidor, frontend, backend och CRM — från första skiss till driftsatt system."
+    },
+    "work": {
+      "title": "Arbeten",
+      "description": "Utvalda projekt: SaaS-produkter, kundwebbplatser, automationsverktyg och native-appar."
+    },
+    "services": {
+      "title": "Tjänster",
+      "description": "Kompletta hemsidor, frontend, backend och API:er samt CRM-system och integrationer."
+    },
+    "about": {
+      "title": "Om mig",
+      "description": "Vem jag är, hur jag arbetar och vilka verktyg jag använder."
+    },
+    "contact": {
+      "title": "Kontakt",
+      "description": "Berätta vad du vill bygga så hör jag av mig inom ett dygn."
+    }
+  },
+  "nav": {
+    "home": "Start",
+    "work": "Arbeten",
+    "services": "Tjänster",
+    "about": "Om mig",
+    "contact": "Kontakt",
+    "menu": "Meny",
+    "close": "Stäng",
+    "openMenu": "Öppna meny",
+    "closeMenu": "Stäng meny",
+    "skipToContent": "Hoppa till innehåll",
+    "language": "Språk",
+    "switchTo": "Byt till engelska"
+  },
+  "preloader": {
+    "label": "Laddar"
+  },
+  "hero": {
+    "eyebrow": "Webbutvecklare · Sverige",
+    "titleLine1": "Jag bygger",
+    "titleLine2": "digitala upplevelser",
+    "titleLine3": "som säljer",
+    "subtitle": "Hemsidor, frontend, backend och CRM. Från första skiss till driftsatt system.",
+    "ctaWork": "Se mina arbeten",
+    "ctaContact": "Boka ett samtal",
+    "scroll": "Scrolla"
+  },
+  "manifest": {
+    "eyebrow": "Vad jag gör",
+    "body": "De flesta kan bygga en sida som ser bra ut. Färre bygger något som fortfarande fungerar när tusen personer använder det samtidigt, när betalningen ska gå igenom, när mejlet måste komma fram. Jag bygger hela kedjan — gränssnittet, databasen, inloggningen, betalflödet och driften.",
+    "signature": "Oskar Östlind"
+  },
+  "work": {
+    "eyebrow": "Utvalda arbeten",
+    "title": "Saker jag byggt",
+    "intro": "Från NFC-kopplade SaaS-produkter till kundwebbplatser som faktiskt genererar förfrågningar.",
+    "viewAll": "Se alla arbeten",
+    "viewCase": "Läs caset",
+    "visitSite": "Besök sajten",
+    "viewCode": "Se koden",
+    "allTitle": "Arbeten",
+    "allIntro": "Sju projekt, från snabba kundwebbar till plattformar med betalflöden och native-appar.",
+    "filterAll": "Alla",
+    "filterLabel": "Filtrera projekt",
+    "empty": "Inga projekt matchar filtret.",
+    "nextCase": "Nästa case",
+    "backToWork": "Tillbaka till arbeten",
+    "theChallenge": "Uppdraget",
+    "whatIBuilt": "Vad jag byggde",
+    "techStack": "Teknik",
+    "year": "År",
+    "role": "Roll",
+    "roleValue": "Design, frontend, backend och drift"
+  },
+  "services": {
+    "eyebrow": "Tjänster",
+    "title": "Vad du kan beställa",
+    "intro": "Fyra sätt att jobba med mig. Vet du inte vilket du behöver — hör av dig så reder vi ut det.",
+    "learnMore": "Läs mer",
+    "whoFor": "Passar",
+    "timeline": "Typisk leveranstid",
+    "items": {
+      "websites": {
+        "title": "Kompletta hemsidor",
+        "summary": "Från tom sida till driftsatt webbplats med egen domän, formulär och analys.",
+        "detail": "Jag tar hand om allt: struktur, design, innehållsuppsättning, utveckling, tillgänglighet, SEO och driftsättning. Vill du kunna redigera texterna själv sätter jag upp ett CMS.",
+        "who": "Företag som behöver en sida som drar in kunder, inte bara existerar.",
+        "timeline": "2–5 veckor"
+      },
+      "frontend": {
+        "title": "Frontend",
+        "summary": "Gränssnitt som känns snabba, tillgängliga och genomtänkta i varje detalj.",
+        "detail": "React och Next.js med TypeScript. Animation där den tillför något, aldrig för sakens skull. Tillgänglighet och Core Web Vitals är inbyggda krav, inte efterhandsarbete.",
+        "who": "Team som har design eller backend på plats men behöver gränssnittet byggt ordentligt.",
+        "timeline": "1–4 veckor"
+      },
+      "backend": {
+        "title": "Backend & API",
+        "summary": "Databaser, autentisering, betalflöden och integrationer som håller.",
+        "detail": "PostgreSQL med Prisma eller Drizzle, autentisering med NextAuth, betalningar via Stripe, mejlutskick, schemalagda jobb och webhooks. Byggt för att gå att felsöka om ett år.",
+        "who": "Produkter som behöver mer än en kontaktformulär bakom sig.",
+        "timeline": "2–8 veckor"
+      },
+      "crm": {
+        "title": "CRM & integrationer",
+        "summary": "System som får era verktyg att prata med varandra i stället för att skapa dubbelarbete.",
+        "detail": "Skräddarsydda adminpaneler, kunddatabaser, automatiserade flöden och kopplingar mot tjänster ni redan använder. Ofta är det här den största tidsbesparingen.",
+        "who": "Verksamheter som lägger timmar i veckan på att flytta data för hand.",
+        "timeline": "3–10 veckor"
+      }
+    }
+  },
+  "stack": {
+    "eyebrow": "Verktyg",
+    "title": "Vad jag bygger med",
+    "intro": "Allt här nedanför sitter i minst ett projekt som ligger i produktion.",
+    "hint": "Dra för att rotera",
+    "hintTouch": "Svep för att utforska"
+  },
+  "process": {
+    "eyebrow": "Så arbetar jag",
+    "title": "Fyra steg, inga överraskningar",
+    "steps": {
+      "discover": {
+        "title": "Upptäck",
+        "body": "Vi går igenom vad du faktiskt behöver, vem som ska använda det och vad som räknas som lyckat. Du får en fast omfattning och ett pris innan något byggs."
+      },
+      "design": {
+        "title": "Design",
+        "body": "Struktur och gränssnitt tar form. Du ser riktiga skisser tidigt, inte en färdig sajt du hade velat ändra på från början."
+      },
+      "build": {
+        "title": "Bygg",
+        "body": "Utveckling i korta cykler med löpande avstämning. Du kan följa arbetet på en testlänk hela vägen."
+      },
+      "launch": {
+        "title": "Lansera & förvalta",
+        "body": "Driftsättning, domän, analys och överlämning. Sedan finns jag kvar för det som dyker upp efteråt."
+      }
+    }
+  },
+  "stats": {
+    "projects": "Projekt i produktion",
+    "endpoints": "API-endpoints byggda",
+    "years": "År med kod",
+    "response": "Svarstid på förfrågan",
+    "responseValue": "24h"
+  },
+  "cta": {
+    "eyebrow": "Nästa steg",
+    "title": "Berätta vad du vill bygga",
+    "body": "Ett kort samtal räcker för att avgöra om vi passar ihop. Du får ett tydligt besked om omfattning och pris, oavsett hur det slutar.",
+    "button": "Skicka ett meddelande",
+    "or": "eller mejla direkt"
+  },
+  "footer": {
+    "available": "Tillgänglig för uppdrag",
+    "localTime": "Lokal tid",
+    "builtBy": "Byggd från grunden av mig — Next.js, React Three Fiber och GSAP.",
+    "rights": "Alla rättigheter förbehållna.",
+    "backToTop": "Till toppen"
+  },
+  "about": {
+    "eyebrow": "Om mig",
+    "title": "Jag bygger saker som ska hålla",
+    "intro": "Jag heter Oskar Östlind och bygger kompletta digitala lösningar — från gränssnittet folk klickar på till databasen och betalflödet bakom.",
+    "body1": "Jag började med Python och små skript. Det växte till Flask-applikationer med användare och betalningar, och därifrån vidare till Next.js, TypeScript och native iOS-appar. Den resan syns fortfarande i hur jag jobbar: jag vill förstå hela systemet, inte bara mitt lager av det.",
+    "body2": "Just nu bygger jag mest på Next.js med TypeScript, PostgreSQL och Prisma, med Stripe för betalningar och Capacitor när något behöver bli en riktig app. Men verktyget är sällan poängen — poängen är att det som byggs ska gå att lita på.",
+    "body3": "Jag tar uppdrag som frilans och jobbar helst nära den som beställer. Korta avstånd, snabba beslut och en testlänk du kan följa hela vägen.",
+    "toolsTitle": "Verktyg jag använder",
+    "toolsIntro": "Grupperat efter vad de gör. Allt här sitter i minst ett projekt som ligger uppe.",
+    "ctaTitle": "Vill du bygga något?",
+    "ctaBody": "Hör av dig så tar vi ett samtal."
+  },
+  "contact": {
+    "eyebrow": "Kontakt",
+    "title": "Låt oss prata",
+    "intro": "Berätta kort vad du vill bygga så återkommer jag inom ett dygn. Är du osäker på omfattning eller budget — skriv ändå, det reder vi ut tillsammans.",
+    "directTitle": "Direkt",
+    "emailLabel": "E-post",
+    "githubLabel": "GitHub",
+    "linkedinLabel": "LinkedIn",
+    "form": {
+      "name": "Namn",
+      "namePlaceholder": "Ditt namn",
+      "email": "E-post",
+      "emailPlaceholder": "din@epost.se",
+      "company": "Företag",
+      "companyPlaceholder": "Valfritt",
+      "budget": "Ungefärlig budget",
+      "budgetPlaceholder": "Vet inte än",
+      "message": "Vad vill du bygga?",
+      "messagePlaceholder": "Beskriv projektet i några meningar. Ju mer konkret, desto bättre svar får du.",
+      "submit": "Skicka meddelande",
+      "sending": "Skickar…",
+      "successTitle": "Tack — meddelandet är skickat.",
+      "successBody": "Jag hör av mig till dig inom ett dygn.",
+      "errorTitle": "Något gick fel.",
+      "errorBody": "Försök igen, eller mejla mig direkt på",
+      "required": "obligatoriskt",
+      "optional": "valfritt"
+    },
+    "errors": {
+      "nameShort": "Skriv ditt namn.",
+      "emailInvalid": "Kontrollera e-postadressen.",
+      "messageShort": "Skriv några rader om vad du vill bygga.",
+      "rateLimit": "Du har skickat nyligen. Vänta en stund och försök igen.",
+      "server": "Meddelandet kunde inte skickas just nu."
+    }
+  },
+  "notFound": {
+    "title": "Sidan finns inte",
+    "body": "Länken kan vara gammal eller felstavad.",
+    "cta": "Till startsidan"
+  }
+}
