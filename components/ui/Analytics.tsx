@@ -1,27 +1,13 @@
-import Script from "next/script";
-import { site } from "@/lib/site";
-
-/**
- * Cloudflare Web Analytics.
+/* BORTTAGEN 2026-08-08 — Cloudflare Web Analytics är struken på Oskars
+ * begäran: inget behov av besöksstatistik just nu.
  *
- * Vald framför Vercel Analytics eftersom den är gratis utan volymtak, inte
- * sätter några cookies och därför inte kräver samtyckesbanner — en banner hade
- * varit det första besökaren mötte på en sajt vars hela poäng är första
- * intrycket.
+ * Vill du ha statistik senare är Vercels egen den naturliga vägen, eftersom
+ * sajten redan ligger där: `npm i @vercel/analytics`, rendera <Analytics />
+ * i `app/[locale]/layout.tsx` och slå på Web Analytics i Vercel-panelen.
+ * Vercels siffror utan det paketet är infrastrukturmätning (requests,
+ * bandbredd), inte besökare och sidvisningar.
  *
- * Skriptet laddas först när sidan är interaktiv, så det påverkar inte LCP.
- * Utan token renderas ingenting: sajten ska kunna köras lokalt och i preview
- * utan att skicka trafik till någon tredje part.
+ * Filen ligger kvar tom bara för att byggsandlådan inte får radera filer i
+ * den molnmonterade projektmappen. Ta bort den med `git rm` vid nästa commit.
  */
-export default function Analytics() {
-  if (!site.analyticsToken) return null;
-
-  return (
-    <Script
-      id="cf-beacon"
-      strategy="afterInteractive"
-      src="https://static.cloudflareinsights.com/beacon.min.js"
-      data-cf-beacon={JSON.stringify({ token: site.analyticsToken })}
-    />
-  );
-}
+export {};

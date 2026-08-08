@@ -181,15 +181,6 @@
     "ctaTitle": "Want to build something?",
     "ctaBody": "Get in touch and let's talk."
   },
-  "booking": {
-    "eyebrow": "Booking",
-    "title": "Or just book a call",
-    "body": "Fifteen minutes is enough to walk through what you want to build and decide whether I'm the right person for it. Pick a time that suits you.",
-    "open": "Show the calendar",
-    "note": "The calendar only loads once you click.",
-    "frameTitle": "Booking calendar",
-    "newTab": "Open the booking page in a new tab"
-  },
   "contact": {
     "eyebrow": "Contact",
     "title": "Let's talk",

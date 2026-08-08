@@ -13,7 +13,6 @@ import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 import Preloader from "@/components/ui/Preloader";
 import JsonLd from "@/components/ui/JsonLd";
-import Analytics from "@/components/ui/Analytics";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -94,7 +93,6 @@ export default async function LocaleLayout({
             {children}
           </main>
           <Footer />
-          <Analytics />
         </NextIntlClientProvider>
       </body>
     </html>

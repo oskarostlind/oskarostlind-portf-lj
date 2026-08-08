@@ -6,19 +6,12 @@ export const site = {
   github: "https://github.com/oskarostlind",
   linkedin: "https://www.linkedin.com/in/oskar-östlind-8a5b59234/",
   timezone: "Europe/Stockholm",
-
-  /**
-   * Cal.com-länk på formen `anvandarnamn/30min`, satt via `NEXT_PUBLIC_CAL_LINK`.
-   * Är variabeln tom renderas ingen bokningsmodul alls. Ett påhittat användarnamn
-   * hade lett besökaren till en 404 mitt i det mest köpnära ögonblicket på sajten,
-   * så tomt är det enda försvarbara defaultvärdet.
-   */
-  calLink: process.env.NEXT_PUBLIC_CAL_LINK ?? "",
-
-  /**
-   * Cloudflare Web Analytics — cookiefritt, gratis och utan volymtak.
-   * Token hämtas i Cloudflare-panelen under Web Analytics → Add a site.
-   * Tom variabel = ingen mätning och inget tredjepartsskript alls.
-   */
-  analyticsToken: process.env.NEXT_PUBLIC_CF_BEACON_TOKEN ?? "",
 } as const;
+
+/* Här låg tidigare `calLink` (Cal.com-bokning) och `analyticsToken`
+   (Cloudflare Web Analytics). Båda borttagna 2026-08-08 på Oskars begäran:
+   ingen kalenderfunktion önskas, och inget behov av besöksstatistik just nu.
+   Vill du ha statistik senare är Vercels egen den naturliga vägen — den
+   kräver paketet `@vercel/analytics`, en `<Analytics />` i layouten och en
+   knapp i Vercel-panelen. Vercels inbyggda siffror utan paket är
+   infrastrukturmätning (requests, bandbredd), inte besökare. */

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import PageHead from "@/components/ui/PageHead";
 import ContactForm from "@/components/sections/ContactForm";
-import Booking from "@/components/ui/Booking";
 import { routing } from "@/i18n/routing";
 import { site } from "@/lib/site";
 
@@ -40,14 +39,6 @@ export default async function ContactPage({
   return (
     <>
       <PageHead eyebrow={t("eyebrow")} title={t("title")} intro={t("intro")} />
-
-      {/* Bokningen ligger före formuläret: den som redan bestämt sig ska inte
-          behöva scrolla förbi ett fritextfält för att hitta en kalendertid. */}
-      {site.calLink ? (
-        <div className="shell pt-6">
-          <Booking />
-        </div>
-      ) : null}
 
       <div className="shell grid gap-14 pb-32 pt-10 lg:grid-cols-[1.5fr_1fr] lg:gap-20">
         <ContactForm />

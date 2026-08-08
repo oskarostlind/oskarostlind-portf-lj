@@ -38,15 +38,9 @@ SMTP_USER=oskarandreassen01@gmail.com
 SMTP_PASS=<app-lösenord>
 CONTACT_TO=oskarandreassen01@gmail.com
 NEXT_PUBLIC_SITE_URL=https://oskarostlind.se
-NEXT_PUBLIC_CAL_LINK=<anvandarnamn/15min>
-NEXT_PUBLIC_CF_BEACON_TOKEN=<token>
 ```
 
-De två sista är valfria och avstängda som standard.
-
-`NEXT_PUBLIC_CAL_LINK` slår på bokningsmodulen överst på `/kontakt`. Värdet är Cal.com-länken utan domän, alltså `anvandarnamn/15min` — inte hela URL:en. Gratisnivån räcker. Är variabeln tom renderas modulen inte alls, hellre det än en knapp som leder till en 404. Kalendern hämtas först när besökaren klickar, så inget tredjepartsanrop sker vid sidladdning.
-
-`NEXT_PUBLIC_CF_BEACON_TOKEN` slår på Cloudflare Web Analytics — gratis, utan volymtak och utan cookies, vilket är hela poängen: ingen samtyckesbanner behöver möta besökaren. Token finns i Cloudflare-panelen under Web Analytics → Add a site. Sajten behöver inte ligga hos Cloudflare för att mätningen ska fungera.
+Alla sex behövs. `NEXT_PUBLIC_SITE_URL` styr canonical-URL:er, sitemap, hreflang och OG-bilder — sätt den till `http://localhost:3000` lokalt.
 
 `SMTP_PASS` är **inte** ditt Google-lösenord. Skapa ett app-lösenord på https://myaccount.google.com/apppasswords (kräver tvåstegsverifiering). Klistra in det utan mellanslag.
 
@@ -131,43 +125,24 @@ Stack-konstellationen är byggd med CSS 3D-transformer i stället för WebGL. Ef
 
 ## Deploy
 
-### Cloudflare Pages (rekommenderas)
+**Sajten ligger på Vercel och är live på https://oskarostlind.se.** Projektet heter `oskarostlind` under teamet `oskar-ostlinds-projects` och är kopplat till GitHub-repot med `master` som produktionsgren — varje push deployar automatiskt. Ingen byggkonfiguration behövs, Next.js detekteras.
 
-Vercels Hobby-nivå är enligt villkoren avsedd för icke-kommersiellt bruk, och en portfölj som säljer in tjänster ligger i gråzonen. Cloudflare Pages har ingen sådan begränsning och obegränsad bandbredd.
+Miljövariablerna läggs in under Settings → Environment Variables för Production och Preview.
 
-1. Pusha repot till GitHub
-2. Cloudflare Dashboard → Workers & Pages → Create → Pages → anslut repot
-3. Build command: `npx @opennextjs/cloudflare build` · Output: `.open-next/assets`
-4. Lägg in miljövariablerna under Settings → Environment variables
+> Ett tidigare utkast av det här dokumentet rekommenderade Cloudflare Pages och angav apex-IP:n `76.76.21.21`. Båda är fel numera: hostingvalet ändrades till Vercel 2026-08-08, och den apex-IP som faktiskt är satt hos Strato är `216.198.79.1`. Följ inte gamla instruktioner ur git-historiken.
 
-### Vercel
+## Domänen
 
-Importera repot, lägg in miljövariablerna, klart. Nollkonfiguration.
-
-## Koppla domänen
-
-Domänen `oskarostlind.se` ligger hos Strato. När den är klar:
-
-**Cloudflare Pages** → Custom domains → lägg till `oskarostlind.se`. Sätt hos Strato:
+`oskarostlind.se` är registrerad hos Strato och pekar på Vercel. Posterna som gäller:
 
 ```
-CNAME   www   <projekt>.pages.dev
-```
-
-Apex-domänen (`oskarostlind.se` utan www) kräver att domänen flyttas in i Cloudflare DNS, eller att Strato stödjer ALIAS/ANAME. Stödjer de det:
-
-```
-ALIAS   @     <projekt>.pages.dev
-```
-
-**Vercel** → Settings → Domains. Sätt hos Strato:
-
-```
-A       @     76.76.21.21
+A       @     216.198.79.1
 CNAME   www   cname.vercel-dns.com
 ```
 
-Uppdatera `NEXT_PUBLIC_SITE_URL` när domänen är live — den styr canonical-URL:er, sitemap och OG-bilder.
+Apex är primär domän och `www` är en 308-omdirigering dit — inte tvärtom. Vercel förkryssar "Redirect apex domains to www" i dialogen; den rutan ska vara **urkryssad**, annars pekar varje canonical-URL och `NEXT_PUBLIC_SITE_URL` åt fel håll.
+
+Certifikatet sköts av Vercel. Slå **inte** på Stratos "Kryptera" parallellt — två utfärdare på samma domän ställer bara till det.
 
 ## Kvar att göra
 
