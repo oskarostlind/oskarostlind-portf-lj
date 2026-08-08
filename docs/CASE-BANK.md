@@ -111,7 +111,7 @@ Det renodlade "kunden fick en hemsida"-caset — perfekt för att visa vad en ty
 
 ---
 
-## Case 5 — Bevakningsverktyg (RSS-feed)
+## Case 5 — Kundnytt (RSS-feed)
 
 **Automatisk nyhetsbevakning på sökord och bolagsnamn, levererad som mejl.**
 

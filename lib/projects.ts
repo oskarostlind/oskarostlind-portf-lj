@@ -228,11 +228,11 @@ export const projects: Project[] = [
     // TODO (Oskar): be om ett kundcitat från Jesper + siffror på antal förfrågningar före/efter.
   },
   {
-    slug: "bevakning",
-    title: "Bevakningsverktyg",
+    slug: "kundnytt",
+    title: "Kundnytt",
     year: "2026",
-    categories: ["verktyg"],
-    featured: false,
+    categories: ["saas", "verktyg"],
+    featured: true,
     order: 5,
     tagline: {
       sv: "Automatisk nyhetsbevakning på sökord och bolagsnamn, levererad som mejl.",
@@ -263,7 +263,7 @@ export const projects: Project[] = [
       { sv: "Normalisering av spretiga nyhetskällor", en: "Normalisation of inconsistent news sources" },
       { sv: "Enhetstester på parsning-logiken", en: "Unit tests on the parsing logic" },
     ],
-    live: "https://rss-feed-lime.vercel.app",
+    live: "https://kundnytt.se",
     repo: "https://github.com/oskarostlind/RSS-feed",
   },
   {
@@ -271,7 +271,7 @@ export const projects: Project[] = [
     title: "Timringskurs",
     year: "2026",
     categories: ["kundwebb"],
-    featured: false,
+    featured: true,
     order: 6,
     tagline: {
       sv: "Kurswebb där kunden själv redigerar allt innehåll utan att röra koden.",
