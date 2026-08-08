@@ -140,7 +140,7 @@ Allt innehåll i `messages/sv.json` och `messages/en.json`. Ingen hårdkodad tex
 
 **Case och verktygslista:** använd `CASE-BANK.md` i repot. Den innehåller sju verkliga projekt hämtade från Oskars GitHub, med korrekt teknikstack, live-URL:er, tidsperioder och en färdig gruppering av hans verktyg. Konvertera varje case till en MDX-fil under `content/arbeten/`.
 
-**Startsidans fyra utvalda case:** SocialCard/Avyra · NextWatch · Escape Room · JJ Bygg. Övriga tre visas på `/arbeten`.
+**Startsidans fyra utvalda case:** AvyraCards · NextWatch · Escape Room · JJ Bygg. Övriga tre visas på `/arbeten`.
 
 **Filtrering på `/arbeten`:** Kundwebb · SaaS-produkt · Verktyg & automation · App.
 

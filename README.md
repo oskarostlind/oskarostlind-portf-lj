@@ -81,7 +81,7 @@ Sidan, OG-bilden och sitemap-posten skapas automatiskt.
 **Lägg filen i `public/case/` och döp den till casets slug. Det är hela steget** — ingen kodändring, inget `image`-fält.
 
 ```
-public/case/socialcard.jpg
+public/case/avyracards.jpg
 public/case/nextwatch.webp
 public/case/jj-bygg/cover.avif      ← undermapp funkar också
 ```

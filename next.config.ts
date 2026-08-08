@@ -15,6 +15,17 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  /* Caset hette "socialcard" i slugen tills produktens folkliga namn
+     bekräftades vara AvyraCards. Sajten gick live samma dag som bytet, så
+     kostnaden i sökmotorerna är nära noll — men sitemapen hann hämtas och
+     adressen kan ligga i någons flik. 308 behåller metoden och signalerar
+     permanent flytt, till skillnad från 307. */
+  async redirects() {
+    return [
+      { source: "/arbeten/socialcard", destination: "/arbeten/avyracards", permanent: true },
+      { source: "/en/work/socialcard", destination: "/en/work/avyracards", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

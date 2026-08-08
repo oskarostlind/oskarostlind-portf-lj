@@ -26,7 +26,12 @@ Allt nedan är läst direkt ur dina publika repon (stack, beskrivningar, datum, 
 
 ---
 
-## Case 1 — SocialCard / Avyra Cards *(flaggskepp)*
+## Case 1 — AvyraCards *(flaggskepp)*
+
+> **Namn:** produkten hette SocialCard i v1 och heter numera AvyraCards, vilket
+> är det namn som gäller överallt i portföljen (slug `avyracards`). Gamla
+> namnet nämns bara där historiken är poängen. Domänen `socialcard.se` är
+> död — den pekar på en Strato-platshållare och svarar inte över https.
 
 **En SaaS-produkt du byggt två gånger, och andra gången bättre.**
 
@@ -34,7 +39,7 @@ Digitalt visitkort kopplat till ett fysiskt NFC-kort med styrbar domänpekning. 
 
 | | |
 |---|---|
-| **Live** | socialcard.se · social-card-next-js.vercel.app |
+| **Live** | avyracards.se · avyracards.com · ~~socialcard.se~~ (död) |
 | **Repon** | `TheSocialCard2Live` (v1, Python) · `Avyracards` (v2, TypeScript) |
 | **Period** | maj 2025 → juli 2026 (pågående) |
 
@@ -152,7 +157,7 @@ Mindre TypeScript-projekt, mars 2026. Live: veckomat-av-ke-gunbritt.vercel.app.
 
 **Startsidan — 4 utvalda case:**
 
-1. **SocialCard / Avyra** — bredden och ambitionen
+1. **AvyraCards** — bredden och ambitionen
 2. **NextWatch** — den tekniska tyngden
 3. **Escape Room** — den visuella wow-faktorn (och ev. det stora kundnamnet)
 4. **JJ Bygg** — beviset att du levererar åt riktiga kunder

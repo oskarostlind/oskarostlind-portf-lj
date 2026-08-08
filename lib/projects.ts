@@ -47,8 +47,8 @@ export const categories: { id: Category; label: Localized }[] = [
 
 export const projects: Project[] = [
   {
-    slug: "socialcard",
-    title: "SocialCard / Avyra",
+    slug: "avyracards",
+    title: "AvyraCards",
     year: "2025–2026",
     categories: ["saas", "app"],
     featured: true,
@@ -92,7 +92,10 @@ export const projects: Project[] = [
       { sv: "Apple Wallet-pass genererade på servern", en: "Server-generated Apple Wallet passes" },
       { sv: "Full migrering Flask → Next.js utan driftstopp", en: "Full Flask → Next.js migration with no downtime" },
     ],
-    live: "https://socialcard.se",
+    // socialcard.se är produktens gamla domän. Den pekar numera på en
+    // Strato-platshållare och svarar inte över https — den låg som live-länk
+    // här och gav flaggskeppscaset en död "besök sajten"-knapp.
+    live: "https://avyracards.se",
     repo: "https://github.com/oskarostlind/Avyracards",
   },
   {
