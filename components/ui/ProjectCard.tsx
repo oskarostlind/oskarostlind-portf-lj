@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useReveal } from "@/lib/useReveal";
-import { CASE_MEDIA_VT_NAME, gradientFor } from "@/lib/media";
+import { CASE_MEDIA_VT_NAME, caseMediaFor } from "@/lib/media";
 import { canAnimateNavigation, navigateWithCaseTransition } from "@/lib/viewTransition";
 import type { Project } from "@/lib/projects";
 
@@ -21,6 +21,7 @@ export default function ProjectCard({
   wide?: boolean;
 }) {
   const t = useTranslations("work");
+  const media = caseMediaFor(project);
   const ref = useReveal<HTMLElement>();
   const mediaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -44,11 +45,11 @@ export default function ProjectCard({
       }
       if (!canAnimateNavigation()) return; // låt <Link> göra sitt
 
-      const media = mediaRef.current;
-      if (!media) return;
+      const node = mediaRef.current;
+      if (!node) return;
 
       event.preventDefault();
-      media.style.viewTransitionName = CASE_MEDIA_VT_NAME;
+      node.style.viewTransitionName = CASE_MEDIA_VT_NAME;
 
       navigateWithCaseTransition(
         () =>
@@ -57,7 +58,7 @@ export default function ProjectCard({
             params: { slug: project.slug },
           }),
         () => {
-          media.style.viewTransitionName = "";
+          node.style.viewTransitionName = "";
         }
       );
     },
@@ -82,19 +83,21 @@ export default function ProjectCard({
             wide ? "aspect-[16/9] md:aspect-[21/9]" : "aspect-[4/3]"
           }`}
         >
-          {project.image ? (
+          {media.kind === "image" ? (
             <Image
-              src={project.image}
+              src={media.src}
               alt=""
               fill
               sizes={wide ? "(max-width: 768px) 100vw, 90vw" : "(max-width: 768px) 100vw, 45vw"}
+              placeholder={media.blurDataURL ? "blur" : "empty"}
+              blurDataURL={media.blurDataURL}
               className="object-cover transition-transform duration-[1200ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.04]"
             />
           ) : (
             <div
               aria-hidden
               className="absolute inset-0 transition-transform duration-[1200ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.06]"
-              style={{ background: gradientFor(project.slug) }}
+              style={{ background: media.background }}
             />
           )}
 

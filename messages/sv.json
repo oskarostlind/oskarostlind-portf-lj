@@ -63,6 +63,7 @@
     "intro": "Från NFC-kopplade SaaS-produkter till kundwebbplatser som faktiskt genererar förfrågningar.",
     "viewAll": "Se alla arbeten",
     "viewCase": "Läs caset",
+    "imageAlt": "Skärmbild från {title}",
     "visitSite": "Besök sajten",
     "viewCode": "Se koden",
     "allTitle": "Arbeten",
@@ -178,6 +179,15 @@
     "toolsIntro": "Grupperat efter vad de gör. Allt här sitter i minst ett projekt som ligger uppe.",
     "ctaTitle": "Vill du bygga något?",
     "ctaBody": "Hör av dig så tar vi ett samtal."
+  },
+  "booking": {
+    "eyebrow": "Bokning",
+    "title": "Ta ett samtal i stället",
+    "body": "Femton minuter räcker för att gå igenom vad du vill bygga och avgöra om jag är rätt person för det. Välj en tid som passar dig.",
+    "open": "Visa kalendern",
+    "note": "Kalendern laddas först när du klickar.",
+    "frameTitle": "Bokningskalender",
+    "newTab": "Öppna bokningen i en ny flik"
   },
   "contact": {
     "eyebrow": "Kontakt",

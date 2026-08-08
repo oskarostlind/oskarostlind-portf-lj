@@ -21,7 +21,8 @@ Sajten körs på http://localhost:3000. Svenska ligger på roten, engelska under
 | Kommando | Vad det gör |
 |---|---|
 | `npm run dev` | Utvecklingsserver |
-| `npm run build` | Produktionsbygge |
+| `npm run images` | Läser om `public/case/` och skriver `lib/caseImages.generated.ts` |
+| `npm run build` | Produktionsbygge (kör `npm run images` först, automatiskt) |
 | `npm run start` | Kör produktionsbygget lokalt |
 | `npm run typecheck` | TypeScript utan att bygga |
 | `bash scripts/build.sh` | Bygge via `/tmp/site` (för sandlådan) |
@@ -37,7 +38,15 @@ SMTP_USER=oskarandreassen01@gmail.com
 SMTP_PASS=<app-lösenord>
 CONTACT_TO=oskarandreassen01@gmail.com
 NEXT_PUBLIC_SITE_URL=https://oskarostlind.se
+NEXT_PUBLIC_CAL_LINK=<anvandarnamn/15min>
+NEXT_PUBLIC_CF_BEACON_TOKEN=<token>
 ```
+
+De två sista är valfria och avstängda som standard.
+
+`NEXT_PUBLIC_CAL_LINK` slår på bokningsmodulen överst på `/kontakt`. Värdet är Cal.com-länken utan domän, alltså `anvandarnamn/15min` — inte hela URL:en. Gratisnivån räcker. Är variabeln tom renderas modulen inte alls, hellre det än en knapp som leder till en 404. Kalendern hämtas först när besökaren klickar, så inget tredjepartsanrop sker vid sidladdning.
+
+`NEXT_PUBLIC_CF_BEACON_TOKEN` slår på Cloudflare Web Analytics — gratis, utan volymtak och utan cookies, vilket är hela poängen: ingen samtyckesbanner behöver möta besökaren. Token finns i Cloudflare-panelen under Web Analytics → Add a site. Sajten behöver inte ligga hos Cloudflare för att mätningen ska fungera.
 
 `SMTP_PASS` är **inte** ditt Google-lösenord. Skapa ett app-lösenord på https://myaccount.google.com/apppasswords (kräver tvåstegsverifiering). Klistra in det utan mellanslag.
 
@@ -61,13 +70,33 @@ Allt caseinnehåll ligger i `lib/projects.ts` som typad data. Lägg till ett obj
   highlights: [{ sv: "…", en: "…" }],
   live: "https://…",
   repo: "https://…",
-  image: "/case/kortnamn.webp",        // valfritt, annars genereras en gradient
+  image: "/case/kortnamn.webp",        // behövs normalt inte — se Bilder nedan
 }
 ```
 
-Sidan, OG-bilden och sitemap-posten skapas automatiskt. Saknas `image` renderas en deterministisk gradient som fallback.
+Sidan, OG-bilden och sitemap-posten skapas automatiskt.
 
-**Bilder:** lägg dem i `public/case/`. Använd WebP eller AVIF och håll dem under ~300 kB. Skärminspelningar: WebM/VP9, 10–15 s, utan ljudspår, max 3 MB.
+## Bilder
+
+**Lägg filen i `public/case/` och döp den till casets slug. Det är hela steget** — ingen kodändring, inget `image`-fält.
+
+```
+public/case/socialcard.jpg
+public/case/nextwatch.webp
+public/case/jj-bygg/cover.avif      ← undermapp funkar också
+```
+
+`scripts/case-images.mjs` körs som `prebuild` (och av `npm run dev`), läser varje bilds mått och skriver en suddig miniatyr på ett par hundra byte till `lib/caseImages.generated.ts`. Miniatyren blir `placeholder="blur"`, så hero-bandet aldrig blinkar tomt medan bilden hämtas. Samma bild används på kortet, på casesidan och i "nästa case" — alla tre går genom `caseMediaFor()` i `lib/media.ts`.
+
+Saknas bilden för ett case renderas en deterministisk gradient i stället. Det ser gjort ut snarare än trasigt, och gradienten är densamma på kortet och på casesidan, vilket View Transition-morfningen kräver.
+
+Skriptet varnar i byggloggen om en bild är smalare än 1600 px eller om filnamnet inte matchar någon slug i `lib/projects.ts` — det senare är nästan alltid ett stavfel, och utan varningen syns bilden bara aldrig.
+
+`image`-fältet i `lib/projects.ts` finns kvar och vinner över den automatiska sökningen, för bilder som ska ligga utanför konventionen. Det ger ingen suddig platshållare.
+
+**Format:** WebP eller AVIF, minst 1600 px brett, under ~300 kB. Skärminspelningar: WebM/VP9, 10–15 s, utan ljudspår, max 3 MB.
+
+`lib/caseImages.generated.ts` är genererad och versionshanterad. Redigera den inte för hand — nästa bygge skriver över den.
 
 ## Texter och översättningar
 

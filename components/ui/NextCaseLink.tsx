@@ -4,7 +4,7 @@ import { useCallback, useRef, type MouseEvent } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { CASE_MEDIA_VT_NAME, gradientFor } from "@/lib/media";
+import { CASE_MEDIA_VT_NAME, caseMediaFor } from "@/lib/media";
 import { canAnimateNavigation, navigateWithCaseTransition } from "@/lib/viewTransition";
 import type { Project } from "@/lib/projects";
 
@@ -14,6 +14,7 @@ import type { Project } from "@/lib/projects";
  */
 export default function NextCaseLink({ project }: { project: Project }) {
   const t = useTranslations("work");
+  const media = caseMediaFor(project);
   const mediaRef = useRef<HTMLSpanElement>(null);
   const router = useRouter();
 
@@ -31,11 +32,11 @@ export default function NextCaseLink({ project }: { project: Project }) {
       }
       if (!canAnimateNavigation()) return;
 
-      const media = mediaRef.current;
-      if (!media) return;
+      const node = mediaRef.current;
+      if (!node) return;
 
       event.preventDefault();
-      media.style.viewTransitionName = CASE_MEDIA_VT_NAME;
+      node.style.viewTransitionName = CASE_MEDIA_VT_NAME;
 
       navigateWithCaseTransition(
         () =>
@@ -44,7 +45,7 @@ export default function NextCaseLink({ project }: { project: Project }) {
             params: { slug: project.slug },
           }),
         () => {
-          media.style.viewTransitionName = "";
+          node.style.viewTransitionName = "";
         }
       );
     },
@@ -65,19 +66,18 @@ export default function NextCaseLink({ project }: { project: Project }) {
               aria-hidden
               className="relative hidden h-20 w-32 shrink-0 overflow-hidden rounded-xl border border-[var(--color-line)] sm:block"
             >
-              {project.image ? (
+              {media.kind === "image" ? (
                 <Image
-                  src={project.image}
+                  src={media.src}
                   alt=""
                   fill
                   sizes="128px"
+                  placeholder={media.blurDataURL ? "blur" : "empty"}
+                  blurDataURL={media.blurDataURL}
                   className="object-cover"
                 />
               ) : (
-                <span
-                  className="absolute inset-0"
-                  style={{ background: gradientFor(project.slug) }}
-                />
+                <span className="absolute inset-0" style={{ background: media.background }} />
               )}
             </span>
 

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/case-images.mjs && next dev",
+    "images": "node scripts/case-images.mjs",
+    "prebuild": "node scripts/case-images.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

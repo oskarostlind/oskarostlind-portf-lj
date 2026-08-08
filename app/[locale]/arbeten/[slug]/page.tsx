@@ -6,7 +6,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { allProjects, getProject } from "@/lib/projects";
-import { gradientFor } from "@/lib/media";
+import { caseMediaFor } from "@/lib/media";
 import { site } from "@/lib/site";
 import Reveal from "@/components/ui/Reveal";
 import ArrowLink from "@/components/ui/ArrowLink";
@@ -62,6 +62,7 @@ export default async function CasePage({
   const l = locale === "en" ? "en" : "sv";
   const t = await getTranslations({ locale, namespace: "work" });
 
+  const media = caseMediaFor(project);
   const index = allProjects.findIndex((p) => p.slug === slug);
   const next = allProjects[(index + 1) % allProjects.length];
 
@@ -77,20 +78,28 @@ export default async function CasePage({
             namnet på den klippande behållaren, inte på bilden inuti.
           */}
           <div className="case-hero relative h-[78svh] min-h-[30rem] w-full overflow-hidden">
-            {project.image ? (
+            {media.kind === "image" ? (
               <Image
-                src={project.image}
-                alt=""
+                src={media.src}
+                /*
+                  Till skillnad från kortet och "nästa case" — där bilden bara
+                  upprepar en rubrik som står bredvid och därför är dekor — är
+                  skärmbilden här sidans huvudsakliga bevis. Den får en riktig
+                  alt-text.
+                */
+                alt={t("imageAlt", { title: project.title })}
                 fill
                 priority
                 sizes="100vw"
+                placeholder={media.blurDataURL ? "blur" : "empty"}
+                blurDataURL={media.blurDataURL}
                 className="object-cover"
               />
             ) : (
               <div
                 aria-hidden
                 className="absolute inset-0"
-                style={{ background: gradientFor(project.slug) }}
+                style={{ background: media.background }}
               />
             )}
 

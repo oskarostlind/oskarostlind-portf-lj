@@ -23,16 +23,23 @@ export default function FeaturedWork() {
       </div>
 
       <div className="shell mt-16 grid gap-6 md:grid-cols-2 md:gap-8">
-        {featuredProjects.map((project, i) => (
-          <ProjectCard
-            key={project.slug}
-            project={project}
-            locale={locale}
-            index={i}
-            /* Första två casen får full bredd — de bär mest tyngd. */
-            wide={i === 0}
-          />
-        ))}
+        {featuredProjects.map((project, i) => {
+          /* Första caset får full bredd — det bär mest tyngd. Blir det udda
+             antal kvar efter det hamnar det sista ensamt i vänsterkolumnen
+             med ett tomt hål bredvid sig, så då får även det full bredd. */
+          const last = i === featuredProjects.length - 1;
+          const orphan = last && (featuredProjects.length - 1) % 2 === 1;
+
+          return (
+            <ProjectCard
+              key={project.slug}
+              project={project}
+              locale={locale}
+              index={i}
+              wide={i === 0 || orphan}
+            />
+          );
+        })}
       </div>
 
       <div className="shell mt-12 md:hidden">
