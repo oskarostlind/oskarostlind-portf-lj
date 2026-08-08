@@ -16,11 +16,32 @@ export default function Preloader() {
     if (reduced || sessionStorage.getItem(KEY)) return;
 
     sessionStorage.setItem(KEY, "1");
+
+    /* Preloadern ska fylla väntetiden, inte lägga sig ovanpå den.
+     *
+     * Tidigare räknade den ned 1150 ms och gick ut på 750 ms — och den startar
+     * först när React hydrerat. På en långsam telefon betyder det att sidan är
+     * färdigladdad, varpå ett ogenomskinligt lager läggs över den i ytterligare
+     * två sekunder. Eftersom LCP mäter när det största elementet faktiskt
+     * målas satte preloadern golvet för sajtens LCP (2,6 s i produktion) och
+     * höll Performance på 87 trots att allt annat var snabbt.
+     *
+     * Nu räknas anslaget från navigationsstart. `performance.now()` är vid
+     * mount detsamma som tiden sedan sidan började laddas, så det som återstår
+     * av BUDGET är det enda vi lägger till. Snabb enhet: hydrering på ~150 ms
+     * ger nästan hela intrót. Långsam enhet: hydreringen har redan ätit upp
+     * budgeten, och besökaren — som väntat länge nog — slipper det helt.
+     * Under MIN_MS är det inte värt en helskärmsövergång. */
+    const BUDGET = 900;
+    const MIN_MS = 150;
+    const remaining = BUDGET - performance.now();
+    if (remaining < MIN_MS) return;
+
     setActive(true);
     document.documentElement.style.overflow = "hidden";
 
     const start = performance.now();
-    const duration = 1150;
+    const duration = remaining;
     let frame = 0;
 
     const tick = (now: number) => {
@@ -34,7 +55,7 @@ export default function Preloader() {
         window.setTimeout(() => {
           setActive(false);
           document.documentElement.style.overflow = "";
-        }, 750);
+        }, 520);
       }
     };
     frame = requestAnimationFrame(tick);
@@ -52,7 +73,7 @@ export default function Preloader() {
       role="status"
       aria-live="polite"
       aria-label={t("label")}
-      className={`fixed inset-0 z-[300] flex items-end justify-between bg-[var(--color-void)] px-[var(--shell)] pb-10 transition-transform duration-[750ms] ease-[var(--ease-in-out-quart)] ${
+      className={`fixed inset-0 z-[300] flex items-end justify-between bg-[var(--color-void)] px-[var(--shell)] pb-10 transition-transform duration-[520ms] ease-[var(--ease-in-out-quart)] ${
         leaving ? "-translate-y-full" : "translate-y-0"
       }`}
     >

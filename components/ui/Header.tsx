@@ -52,10 +52,13 @@ export default function Header() {
         }`}
       >
         <div className="shell flex h-[var(--header-h,4.5rem)] items-center justify-between">
+          {/* WCAG 2.5.3 Label in Name: det tillgängliga namnet måste innehålla
+              den synliga texten. `aria-label="Start"` ersatte "Oskar Östlind"
+              helt, vilket gjorde länken omöjlig att träffa med röststyrning. */}
           <Link
             href="/"
             className="group flex items-baseline gap-2.5"
-            aria-label={t("home")}
+            aria-label={t("homeAria")}
           >
             <span className="font-[family-name:var(--font-display)] text-[0.95rem] font-semibold tracking-[-0.02em]">
               Oskar Östlind

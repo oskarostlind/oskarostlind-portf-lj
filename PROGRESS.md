@@ -25,6 +25,37 @@ Detta är den enda källan till sanning om vad som är gjort. Uppdatera den efte
 
 **`Bus error (core dumped)` under `next build`** betyder oftast att `@next/swc`-binären (143 MB) är trunkerad efter en avbruten installation. Kör om `npm ci` — då byts binären ut och bygget går igenom.
 
+**Lighthouse går att köra i sandlådan.** Det stod tidigare att det inte gick — det var fel, och det kostade två arbetspass. Sandlådan saknar Chrome men får ladda ned den, och allt som fattas därefter är ett enda systembibliotek. Receptet, som tar ca 3 minuter:
+
+```bash
+# 1. Chrome (chrome-headless-shell räcker; versionen hämtas från listan)
+curl -s https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json
+cd /tmp && curl -sLo chrome.zip \
+  "https://storage.googleapis.com/chrome-for-testing-public/<VERSION>/linux64/chrome-headless-shell-linux64.zip"
+unzip -q chrome.zip -d chrome-hs && chmod +x chrome-hs/*/chrome-headless-shell
+
+# 2. libXdamage saknas och vi är inte root — hämta .deb:en och packa upp den lokalt
+mkdir -p /tmp/deb && cd /tmp/deb && apt-get download libxdamage1
+dpkg-deb -x libxdamage1_*.deb /tmp/chromelibs
+export LD_LIBRARY_PATH=/tmp/chromelibs/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+
+# 3. Lighthouse
+mkdir -p /tmp/lh && cd /tmp/lh && npm init -y && npm i lighthouse
+
+# 4. Kör mot en lokal produktionsserver — servern och mätningen måste ligga i
+#    SAMMA bash-anrop, annars dödar sandlådan servern.
+export CHROME_PATH=/tmp/chrome-hs/chrome-headless-shell-linux64/chrome-headless-shell
+cd /tmp/site && npx next start -p 3000 & sleep 8
+cd /tmp/lh && node node_modules/lighthouse/cli/index.js "http://localhost:3000/" \
+  --output=json --output-path=/tmp/lh/r.json --quiet \
+  --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage --disable-gpu" \
+  --form-factor=mobile --screenEmulation.mobile
+```
+
+Två fallgropar. **Mät `/`, inte `/sv`** — `/sv` svarar 307 och Lighthouse drar av ~620 ms för omdirigeringen, vilket ser ut som ett prestandaproblem men är mätfel. **Prestandasiffran varierar ±5 mellan körningar** eftersom sandlådans CPU delas; kör tre gånger och ta medianen. Tillgänglighet, SEO och Best Practices är deterministiska (axe) och varierar inte — dem går det att lita på direkt.
+
+PageSpeed Insights-API:t utan nyckel har numera dagskvot 0 och svarar 429. Webb-UI:t på pagespeed.web.dev fungerar via Chrome-connectorn men tar ett par minuter per körning.
+
 **STATUS: PÅGÅENDE**
 
 ---
@@ -58,11 +89,16 @@ Detta är den enda källan till sanning om vad som är gjort. Uppdatera den efte
 - [x] **Bokning via Cal.com** — bokningsmodul överst på `/kontakt`, styrd av `NEXT_PUBLIC_CAL_LINK`. Kalendern hämtas först vid klick.
 - [x] **Cloudflare Web Analytics** — cookiefri mätning, styrd av `NEXT_PUBLIC_CF_BEACON_TOKEN`. Inget skript laddas utan token.
 - [x] **Bildpipeline** — `scripts/case-images.mjs` hittar bilder i `public/case/` på slug, läser måtten och genererar suddiga platshållare. Att lägga upp en skärmbild kräver ingen kodändring. Själva bilderna saknas fortfarande, se "Luckor".
+- [x] **Tillgänglighet 100 i Lighthouse** — två skarpa fel rättade: logotypens `aria-label` bröt mot WCAG 2.5.3, och manifestets ord låg på 1,39:1 i vila.
+- [x] **Klientbundlen bantad** — Zod bort från webbläsaren, fem oanvända beroenden bort ur `package.json`, stilmallarna inlinade.
+
+- [x] **Prestandamätning uppsatt och genomförd** — Lighthouse körs numera i sandlådan, se receptet ovan. Utgångsläget mot den driftsatta sajten var Performance 87, Accessibility 96, Best Practices 100, SEO 100. Två tillgänglighetsfel hittades och rättades; A11y är nu 100.
 
 ## Kvar att göra
 
+- [ ] **Pusha ändringarna från 2026-08-08 (kväll)** — allt nedan är byggt och verifierat lokalt men ligger **inte** i produktion. Sandlådan kan inte köra git; se hjälpfils-metoden i regelavsnittet ovan. Tills detta är gjort visar `oskarostlind.se` fortfarande den gamla versionen med A11y 96.
 - [ ] **Fyll i `NEXT_PUBLIC_CAL_LINK` och `NEXT_PUBLIC_CF_BEACON_TOKEN`** — koden finns och är verifierad i bygget, men båda funktionerna är avstängda tills värdena finns. Se "Luckor".
-- [ ] **Prestandamätning** — kör Lighthouse mobil mot den driftsatta sajten. Kraven är Performance ≥ 90, Accessibility 100, SEO 100. Går inte att köra i byggsandlådan — den saknar Chrome, och PageSpeed Insights-API:t (som hade kunnat köra Lighthouse åt oss) svarar tomt genom sandlådans nätverkslager. Kräver en webbläsare hos Oskar: öppna DevTools → Lighthouse → Mobile mot `https://oskarostlind.se`, eller klistra in URL:en på pagespeed.web.dev.
+- [ ] **Bekräfta Performance ≥ 90 i produktion** — kraven på Accessibility 100, SEO 100 och Best Practices 100 är uppfyllda och verifierade. Performance mäter 87–92 lokalt (median 88) och landar därmed på gränsen. Lokala siffror är dock inte jämförbara med produktion: Lighthouse simulerar nätverket (Lantern) utifrån en spårning på en delad sandlåde-CPU, medan Vercels CDN ger en helt annan TTFB. Kör om mätningen mot `https://oskarostlind.se` **efter** att ändringarna pushats. Räcker det inte till 90 är nästa åtgärd hero-rubriken: den är LCP-elementet och avslöjas med `transition-delay` 260–480 ms plus 1 s övergång, alltså tidigast ~1,5 s efter första målning. Att korta ned den är den enskilt största återstående posten.
 
 ---
 
@@ -94,7 +130,7 @@ Tre miljövariabler saknas fortfarande. Sajten fungerar utan dem, men tre funkti
 - **HTTPS är på plats.** Certifikatet är utfärdat av Vercel och `https://oskarostlind.se` svarar 200; `http` skickar vidare med 308. Aktivera **inte** Stratos "Kryptera" parallellt — två certifikatutfärdare på samma domän ställer bara till det.
 - **`www.oskarostlind.se` är tillagd** som 308-omdirigering till apex, med eget certifikat. Sökvägen följer med: `www.oskarostlind.se/en/arbeten` landar på `oskarostlind.se/en/arbeten`. Riktningen är medvetet apex-först — Vercel förkryssar "Redirect apex domains to www" i dialogen, vilket hade vänt allt mot www och brutit varenda canonical-URL och `NEXT_PUBLIC_SITE_URL`. Den rutan ska vara urkryssad.
 
-Ocommittat i mappen: `app/icon.tsx`, `app/apple-icon.tsx`, `.env.example`, `.env.local` och den här filen. De kommer med i produktionen först efter nästa push.
+Ocommittat i mappen efter kvällspasset 2026-08-08: `components/ui/Header.tsx`, `components/ui/Preloader.tsx`, `components/sections/Manifest.tsx`, `components/sections/ContactForm.tsx`, `next.config.ts`, `package.json`, `package-lock.json`, `messages/sv.json`, `messages/en.json` och den här filen. Produktionen kör fortfarande den gamla versionen tills de pushats.
 
 ---
 
@@ -162,6 +198,13 @@ git push -u origin main
 - **Bilder hittas på namnkonvention, inte på ett fält i koden.** `image` i `lib/projects.ts` krävde en kodändring per bild — ett steg som är lätt att glömma och som gör att en uppladdad bild tyst inte syns. `scripts/case-images.mjs` matchar i stället filnamnet mot casets slug. `image`-fältet finns kvar och vinner över sökningen, för bilder utanför konventionen.
 - **Genereringen sker vid bygget, inte vid körning.** Ett `prebuild`-skript läser måtten och skriver `lib/caseImages.generated.ts`, som checkas in. Alternativet — att läsa katalogen i en server-komponent — hade fungerat lokalt men inte i en statiskt prerenderad build, och hade kostat en filsystemsläsning per rendering. Generatorn använder `sharp`, som redan följer med `next`, och faller tillbaka på en egen PNG/JPEG/WebP-headerläsare om den inte går att ladda: då blir det inga suddiga platshållare, men måtten stämmer och bygget går igenom. Båda vägarna är verifierade och ger identiska mått.
 - **Alt-texten skiljer sig mellan vyerna.** På kortet och i "nästa case" upprepar bilden bara en rubrik som står bredvid — den är dekor och får tom alt, vilket är det rätta enligt WCAG. På casesidan är skärmbilden sidans huvudsakliga bevis och får en riktig alt-text (`work.imageAlt`, med casets titel insatt).
+- **Logotypens `aria-label` innehåller nu den synliga texten.** `aria-label="Start"` ersatte texten "Oskar Östlind" i det tillgängliga namnet, vilket bryter mot WCAG 2.5.3 Label in Name: den som röststyr och säger "klicka Oskar Östlind" träffade ingenting, eftersom länken för datorn hette "Start". Nya värdet ligger i `nav.homeAria` ("Oskar Östlind — start") och innehåller den synliga texten, som regeln kräver.
+- **Manifestets vilotillstånd höjt från `opacity-15` till `opacity-[0.42]`.** 0.15 gav den sammansatta färgen #292928 mot `--color-void`, alltså 1,39:1 — långt under de 3:1 WCAG kräver för stor text (`display-md` är minst 28 px, vilket räknas som stor). 0.42 ger #6A6A68 och 3,76:1. Argumentet att texten ändå blir läsbar när man scrollar håller inte: avslöjandet kräver att en IntersectionObserver hinner köra, och den som inte kan utlösa den lämnas med ett oläsbart stycke. Dramatiken är flyttad till rörelsen i stället — orden lyfts 0,1 em samtidigt som de tänds — så sektionen är fortfarande en effekt, inte bara text.
+- **Zod borttaget ur klientbundlen.** Kontaktformuläret drog in Zod och `@hookform/resolvers` för tre valideringsregler: 88 kB rå kod, varav Lighthouse mätte 92 % som oanvänd. Reglerna ligger nu i en handskriven `Resolver` i `ContactForm.tsx`. Zod är kvar i `app/api/kontakt/route.ts`, där validering av obetrodd indata faktiskt måste vara robust — klientvalideringen är bekvämlighet, inte skydd. De två uppsättningarna reglerna måste hållas i synk; det står som kommentar i båda filerna. `/kontakt` gick från 144 kB till 128 kB First Load JS.
+- **Fem oanvända beroenden borttagna:** `gsap`, `motion`, `@react-three/drei`, `@react-three/postprocessing` och `@hookform/resolvers`. Ingen av dem importerades någonstans i `app/`, `components/`, `lib/` eller `i18n/`, så klientbundlen är oförändrad — men låsfilen krymper från 220 till 173 paket, vilket gör både `npm ci` och Vercels byggen snabbare. `@react-three/fiber`, `three` och `lenis` används och är kvar.
+- **`experimental.inlineCss` påslaget.** Sajtens två stilmallar (1,3 kB och 8,5 kB) hämtades över varsin renderblockerande rundtur. Inlinade i dokumentet i stället: Speed Index gick från 3,5 s till 1,9 s och FCP från 1,2 s till 0,9 s i lokal mätning. Flaggan är experimentell i Next 15 men rör bara var CSS:en hamnar, inte hur den skrivs.
+- **Preloadern fyller väntetiden i stället för att läggas ovanpå den.** Den räknade ned 1150 ms och gick ut på 750 ms — och startar först när React hydrerat. På en långsam telefon innebar det att sidan var färdig, varpå ett ogenomskinligt lager täckte den i ytterligare två sekunder. Nu räknas anslaget från navigationsstart: `performance.now()` vid mount är tiden sedan sidan började laddas, och bara det som återstår av en budget på 900 ms läggs till. Snabb enhet får nästan hela intrót, långsam enhet slipper det helt (under 150 ms kvar hoppas det över). Vill man ha tillbaka det längre anslaget är `BUDGET` i `components/ui/Preloader.tsx` talet som ska ändras.
+
 - **`scripts/build.sh` väljer byggmapp dynamiskt** (`$BUILD_DIR` → `/tmp/site` → `$HOME/.oskarostlind-build`). Sandlådan kan byta uid mellan sessioner, vilket gör en `/tmp/site` från förra körningen oläsbar och stoppade bygget helt.
 
 ## Luckor — kräver uppgifter från Oskar
@@ -176,6 +219,11 @@ git push -u origin main
 
 ## Logg
 
+- **2026-08-08 (kväll)** — **Prestandapunkten är inte längre blockerad: Lighthouse går att köra i sandlådan.** Den tidigare noteringen om att det var omöjligt stämde inte. Sandlådan får ladda ned Chrome for Testing, och det enda som saknas därefter är `libXdamage1`, som går att hämta som .deb och packa upp lokalt utan root. Hela receptet står i regelavsnittet överst. PageSpeed Insights-API:t utan nyckel är däremot dött — dagskvoten är numera 0 och det svarar 429, vilket är varför det såg tomt ut förra gången.
+  **Utgångsläget mot driftsatta sajten: Performance 87, Accessibility 96, Best Practices 100, SEO 100.** Två tillgänglighetsfel, båda skarpa. (1) Logotypens `aria-label="Start"` ersatte den synliga texten "Oskar Östlind" i det tillgängliga namnet — ett brott mot WCAG 2.5.3 som gör länken omöjlig att träffa med röststyrning. (2) Manifestets ord låg på `opacity-15`, vilket ger 1,39:1 mot bakgrunden; kravet för stor text är 3:1. Båda rättade, **A11y är nu 100** och verifierat i tre körningar (axe är deterministiskt, så den siffran är att lita på).
+  Tre prestandaåtgärder: Zod bort ur klientbundlen (`/kontakt` 144 → 128 kB First Load JS), fem oanvända beroenden bort ur `package.json` och låsfilen (220 → 173 paket), och `experimental.inlineCss` påslaget så att de två små stilmallarna slutar blockera renderingen. Preloadern räknar dessutom sitt anslag från navigationsstart i stället för från hydrering, så den fyller väntetiden i stället för att lägga sig ovanpå den. Speed Index 3,5 → 1,9 s, FCP 1,2 → 0,9 s.
+  **Performance landar på 87–92 lokalt, median 88 — alltså på gränsen och inte bevisat godkänt.** Lokala siffror är inte jämförbara med produktion, eftersom Lighthouse simulerar nätverket utifrån en spårning på en delad sandlåde-CPU. Punkten står kvar tills den mätts om mot skarpa sajten. LCP-elementet är identifierat: hero-rubrikens andra rad, som avslöjas med `transition-delay` 260–480 ms plus 1 s övergång. Att korta ned den är nästa åtgärd om 90 inte nås.
+  `bash scripts/build.sh` och `npx tsc --noEmit` går båda igenom utan fel. Verifierat i den genererade HTML:en: inga `rel="stylesheet"`, rätt `aria-label` på logotypen, `opacity-[0.42]` i manifestet och kontaktformuläret renderar alla fält. **Inget av detta är pushat** — sandlådan kan inte köra git och GitHub-connectorn är inte auktoriserad i den här sessionen.
 - **2026-08-08** — **Domänen är live.** `https://oskarostlind.se` svarar 200 med giltigt certifikat, `http` skickar vidare med 308 och `/en` fungerar. Ingenting behövde ändras för apex — DNS hos Strato hade hunnit slå igenom och Vercel hade utfärdat certifikatet av sig självt. Det som saknades var `www`: den pekade mot Vercels IP men fanns inte i projektet, så alla som skrev "www" framför fick certifikatfel. Den är nu tillagd som 308-omdirigering till apex och verifierad, sökväg och allt. Notera fällan i Vercels dialog: "Redirect apex domains to www" är förkryssad och hade vänt hela sajten mot www, tvärtemot alla canonical-URL:er.
 - **2026-08-08** — **Bildpipelinen byggd.** Att lägga upp en skärmbild kräver nu ingen kodändring: lägg filen i `public/case/` och döp den till casets slug, så plockas den upp av nästa bygge. `scripts/case-images.mjs` körs som `prebuild`, matchar filnamn mot slug (även `<slug>/cover.<ext>`), läser varje bilds verkliga mått och genererar en 16 px bred WebP-miniatyr som blir `placeholder="blur"` — så hero-bandet aldrig blinkar tomt medan bilden hämtas. Resultatet skrivs till `lib/caseImages.generated.ts`. Alla tre vyer som visar en casebild — kortet, casesidans hero och "nästa case" — går numera genom en enda `caseMediaFor()` i `lib/media.ts`, så en bild dyker upp på alla tre samtidigt eller ingen alls; gradientfallbacken är oförändrad och håller View Transition-morfningen ihop. Skriptet varnar om en bild är smalare än 1600 px eller om filnamnet inte matchar något case, eftersom ett stavfel annars bara yttrar sig som att bilden aldrig syns. Verifierat i skarpt bygge med en riktig bild: `/_next/image`-optimering, blur-platshållare i HTML:en och lokaliserad alt-text (`Skärmbild från …` / `Screenshot from …`) på både `/sv` och `/en`, samtidigt som ett case utan bild fortsatt renderar sin gradient. Fallbacken utan `sharp` testad separat och ger identiska mått. README har fått ett eget avsnitt "Bilder". `bash scripts/build.sh` går igenom utan fel. **Prestandamätningen går inte att göra härifrån:** sandlådan saknar Chrome och PageSpeed Insights-API:t svarar tomt genom nätverkslagret — punkten kräver en webbläsare hos Oskar. **Committat och pushat** som `a89d906`; Vercel-deployen gick igenom (`dpl_HmPuoJ5GiwEdhzVzisdyrYHcWNsn`, READY, production). De gamla låsfilerna i `.git` är borta.
 - **2026-08-08** — Två punkter ur specen som aldrig blivit byggda är nu på plats: **bokning via Cal.com** och **Cloudflare Web Analytics**. Bokningsmodulen ligger överst på `/kontakt`, före formuläret — den som redan bestämt sig ska inte behöva scrolla förbi ett fritextfält för att hitta en tid. Kalendern hämtas först när besökaren klickar, så ingen tredjepart kontaktas vid sidladdning. Mätningen är cookiefri och laddas `afterInteractive`. Båda är env-styrda och renderar ingenting utan värde, så inget påhittat användarnamn eller trasig länk hamnar i produktion. All text ligger i `messages/sv.json` och `en.json` under `booking`. `.env.example`, `.env.local` och README uppdaterade. Bygget verifierat i båda lägena — både med tomma variabler och med värden satta, där beacon-skriptet och Cal.com-länken bekräftats i den genererade HTML:en. Dessutom bockades två punkter av som i praktiken redan var gjorda: pushen till GitHub/Vercel och DNS hos Strato.

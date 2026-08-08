@@ -27,6 +27,7 @@
   },
   "nav": {
     "home": "Home",
+    "homeAria": "Oskar Östlind — home",
     "work": "Work",
     "services": "Services",
     "about": "About",

@@ -1,36 +1,62 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useCallback, useState } from "react";
+import { useForm, type Resolver } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { site } from "@/lib/site";
 
 type Status = "idle" | "sending" | "sent" | "error";
+
+type Values = {
+  name: string;
+  email: string;
+  company?: string;
+  budget?: string;
+  message: string;
+  website?: string;
+};
+
+/* Formen validerar samma tre regler som `app/api/kontakt/route.ts`, men utan
+   Zod. Zod och @hookform/resolvers vägde 88 kB i klientbundlen (92 % oanvänt
+   enligt Lighthouse) för tre villkor som ryms på tio rader. Zod är kvar på
+   servern, där validering av obetrodd indata faktiskt måste vara robust —
+   den här funktionen är bekvämlighet för besökaren, inte ett skydd. Håll de
+   två i synk: ändras minimilängderna här ska de ändras i route:n också. */
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export default function ContactForm() {
   const t = useTranslations("contact.form");
   const e = useTranslations("contact.errors");
   const [status, setStatus] = useState<Status>("idle");
 
-  const schema = z.object({
-    name: z.string().trim().min(2, e("nameShort")),
-    email: z.string().trim().email(e("emailInvalid")),
-    company: z.string().trim().optional(),
-    budget: z.string().trim().optional(),
-    message: z.string().trim().min(15, e("messageShort")),
-    website: z.string().optional(),
-  });
+  const resolver = useCallback<Resolver<Values>>(
+    (raw) => {
+      const values: Values = {
+        name: (raw.name ?? "").trim(),
+        email: (raw.email ?? "").trim(),
+        company: (raw.company ?? "").trim(),
+        budget: (raw.budget ?? "").trim(),
+        message: (raw.message ?? "").trim(),
+        website: raw.website ?? "",
+      };
 
-  type Values = z.infer<typeof schema>;
+      const errors: Record<string, { type: string; message: string }> = {};
+      if (values.name.length < 2) errors.name = { type: "minLength", message: e("nameShort") };
+      if (!EMAIL.test(values.email)) errors.email = { type: "pattern", message: e("emailInvalid") };
+      if (values.message.length < 15)
+        errors.message = { type: "minLength", message: e("messageShort") };
+
+      return Object.keys(errors).length ? { values: {}, errors } : { values, errors: {} };
+    },
+    [e],
+  );
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<Values>({ resolver: zodResolver(schema) });
+  } = useForm<Values>({ resolver });
 
   const onSubmit = async (values: Values) => {
     setStatus("sending");
