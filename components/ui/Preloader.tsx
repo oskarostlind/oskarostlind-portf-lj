@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { gsap } from "gsap";
 
 const KEY = "oo:preloaded";
 
@@ -10,6 +11,7 @@ export default function Preloader() {
   const [active, setActive] = useState(false);
   const [count, setCount] = useState(0);
   const [leaving, setLeaving] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -43,6 +45,7 @@ export default function Preloader() {
     const start = performance.now();
     const duration = remaining;
     let frame = 0;
+    let ctx: ReturnType<typeof gsap.context> | undefined;
 
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / duration);
@@ -52,16 +55,40 @@ export default function Preloader() {
         frame = requestAnimationFrame(tick);
       } else {
         setLeaving(true);
-        window.setTimeout(() => {
-          setActive(false);
-          document.documentElement.style.overflow = "";
-        }, 520);
+
+        // Curtain-wipe: panelen klipps bort uppifrån och ner istället för att
+        // bara glida undan rakt av — lämnar över scenen till heron med lite
+        // mer dramatik. ~0.7s mot tidigare 0.52s, dvs inom +200ms-budgeten.
+        const root = rootRef.current;
+        if (root) {
+          ctx = gsap.context(() => {
+            gsap.fromTo(
+              root,
+              { clipPath: "inset(0% 0 0 0)" },
+              {
+                clipPath: "inset(100% 0 0 0)",
+                duration: 0.7,
+                ease: "expo.out",
+                onComplete: () => {
+                  setActive(false);
+                  document.documentElement.style.overflow = "";
+                },
+              }
+            );
+          });
+        } else {
+          window.setTimeout(() => {
+            setActive(false);
+            document.documentElement.style.overflow = "";
+          }, 520);
+        }
       }
     };
     frame = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(frame);
+      ctx?.revert();
       document.documentElement.style.overflow = "";
     };
   }, []);
@@ -70,12 +97,11 @@ export default function Preloader() {
 
   return (
     <div
+      ref={rootRef}
       role="status"
       aria-live="polite"
       aria-label={t("label")}
-      className={`fixed inset-0 z-[300] flex items-end justify-between bg-[var(--color-void)] px-[var(--shell)] pb-10 transition-transform duration-[520ms] ease-[var(--ease-in-out-quart)] ${
-        leaving ? "-translate-y-full" : "translate-y-0"
-      }`}
+      className="fixed inset-0 z-[300] flex items-end justify-between bg-[var(--color-void)] px-[var(--shell)] pb-10"
     >
       <span className="display-lg block overflow-hidden">
         <span

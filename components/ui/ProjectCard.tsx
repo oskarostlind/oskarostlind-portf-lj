@@ -7,6 +7,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useReveal } from "@/lib/useReveal";
 import { CASE_MEDIA_VT_NAME, caseMediaFor } from "@/lib/media";
 import { canAnimateNavigation, navigateWithCaseTransition } from "@/lib/viewTransition";
+import { useCardHoverFx } from "@/components/three/CardHoverFx";
 import type { Project } from "@/lib/projects";
 
 export default function ProjectCard({
@@ -24,7 +25,22 @@ export default function ProjectCard({
   const media = caseMediaFor(project);
   const ref = useReveal<HTMLElement>();
   const mediaRef = useRef<HTMLDivElement>(null);
+  const fxRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const router = useRouter();
+
+  /**
+   * Shader-hovern lever i ett eget lager mellan bilden och titelöverlägget, så
+   * att texten aldrig hamnar under canvasen. Bara bildcase har något att
+   * distordera — gradientkorten går orörda vidare. Alla övriga villkor (mus,
+   * rörelsepreferens, `has-motion`, WebGL-stöd) prövas i modulen, vid första
+   * hovern, så att ingenting monteras i onödan.
+   */
+  const { onPointerEnter, onPointerMove, onPointerLeave, release } = useCardHoverFx(
+    fxRef,
+    imgRef,
+    media.kind === "image"
+  );
 
   /**
    * Öppningen: bildytan får samma `view-transition-name` som casesidans hero,
@@ -33,6 +49,10 @@ export default function ProjectCard({
    */
   const onClick = useCallback(
     (event: MouseEvent<HTMLAnchorElement>) => {
+      // Canvasen kopplas loss före navigeringen: View Transition-snapshoten
+      // ska tas av <Image>, inte av ett WebGL-lager som är på väg bort.
+      release();
+
       if (
         event.defaultPrevented ||
         event.metaKey ||
@@ -62,7 +82,7 @@ export default function ProjectCard({
         }
       );
     },
-    [project.slug, router]
+    [project.slug, release, router]
   );
 
   return (
@@ -71,28 +91,40 @@ export default function ProjectCard({
       className={`reveal group relative ${wide ? "md:col-span-2" : ""}`}
       style={{ transitionDelay: `${(index % 3) * 90}ms` }}
     >
+      {/* `data-cursor-label` är etiketten den anpassade cursorn visar över
+          kortet. Någon nyckel för "Öppna" finns inte i messages ännu, och de
+          filerna hör till ett annat spår — därav språkvalet här. */}
       <Link
         href={{ pathname: "/arbeten/[slug]", params: { slug: project.slug } }}
         onClick={onClick}
         className="block focus-visible:outline-offset-8"
         aria-label={`${project.title} — ${t("viewCase")}`}
+        data-cursor-label={locale === "en" ? "Open" : "Öppna"}
       >
         <div
           ref={mediaRef}
+          onPointerEnter={onPointerEnter}
+          onPointerMove={onPointerMove}
+          onPointerLeave={onPointerLeave}
           className={`relative overflow-hidden rounded-2xl border border-[var(--color-line)] ${
             wide ? "aspect-[16/9] md:aspect-[21/9]" : "aspect-[4/3]"
           }`}
         >
           {media.kind === "image" ? (
-            <Image
-              src={media.src}
-              alt=""
-              fill
-              sizes={wide ? "(max-width: 768px) 100vw, 90vw" : "(max-width: 768px) 100vw, 45vw"}
-              placeholder={media.blurDataURL ? "blur" : "empty"}
-              blurDataURL={media.blurDataURL}
-              className="object-cover transition-transform duration-[1200ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.04]"
-            />
+            /* Värdlagret för shader-hovern. Bilden ligger kvar och syns tills
+               canvasen tonat in — och hela vägen ut igen om WebGL uteblir. */
+            <div ref={fxRef} className="absolute inset-0">
+              <Image
+                ref={imgRef}
+                src={media.src}
+                alt=""
+                fill
+                sizes={wide ? "(max-width: 768px) 100vw, 90vw" : "(max-width: 768px) 100vw, 45vw"}
+                placeholder={media.blurDataURL ? "blur" : "empty"}
+                blurDataURL={media.blurDataURL}
+                className="object-cover transition-transform duration-[1200ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.04]"
+              />
+            </div>
           ) : (
             <div
               aria-hidden

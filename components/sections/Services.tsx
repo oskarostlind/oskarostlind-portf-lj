@@ -3,13 +3,25 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import SectionHead from "@/components/ui/SectionHead";
-import Reveal from "@/components/ui/Reveal";
+import { fxItems, fxScene, useScrollFx } from "@/lib/scrollFx";
+import "./motion.css";
 
 const items = ["websites", "frontend", "backend", "crm"] as const;
 
 export default function Services({ standalone = false }: { standalone?: boolean }) {
   const t = useTranslations("services");
   const [open, setOpen] = useState<string | null>(standalone ? "websites" : null);
+
+  /* Raderna kommer in efter rubriken, en i taget uppifrån och ner — samma
+     läsordning som listan har. Setupen körs en gång; att öppna ett svar
+     ritar om innehållet men inte raderna, så tweenarna behåller sina mål. */
+  const listRef = useScrollFx<HTMLDivElement>((scope) => {
+    const tl = fxScene(scope);
+    fxItems(tl, scope.querySelectorAll("[data-fx-item]"), {
+      stagger: 0.08,
+      y: 26,
+    });
+  });
 
   return (
     <section id="tjanster" className={standalone ? "pb-28 pt-8" : "py-28 md:py-40"}>
@@ -18,11 +30,11 @@ export default function Services({ standalone = false }: { standalone?: boolean 
           <SectionHead eyebrow={t("eyebrow")} title={t("title")} intro={t("intro")} />
         )}
 
-        <div className={standalone ? "" : "mt-14"}>
+        <div ref={listRef} className={standalone ? "" : "mt-14"}>
           {items.map((id, i) => {
             const expanded = open === id;
             return (
-              <Reveal key={id} delay={i * 70}>
+              <div key={id} data-fx-item>
                 <div className="hairline">
                   <h3>
                     <button
@@ -94,7 +106,7 @@ export default function Services({ standalone = false }: { standalone?: boolean 
                     </div>
                   </div>
                 </div>
-              </Reveal>
+              </div>
             );
           })}
         </div>

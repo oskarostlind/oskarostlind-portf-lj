@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
+import { gsap } from "gsap";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import MenuOverlay from "./MenuOverlay";
 
@@ -12,14 +13,68 @@ export default function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
+  const openRef = useRef(open);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
+    openRef.current = open;
+  }, [open]);
+
+  // Gömmer headern vid scroll nedåt och visar den igen vid scroll uppåt —
+  // klassisk mönster som ger mer yta åt innehållet utan att navigeringen
+  // försvinner för gott. Menyn öppen eller nära toppen håller den alltid synlig.
+  // Körs bara en gång (tomt beroende-array); `openRef` läses i handlern så vi
+  // slipper montera om lyssnaren — och därmed tappa `hidden`-status — varje
+  // gång menyn togglas.
+  //
+  // OBS: gsap.context() reverterar bara GSAP-tweens den skapat, inte en
+  // returnerad funktion (till skillnad från React-effekter) — scroll-
+  // lyssnaren tas därför bort explicit i cleanupen, inte via ctx.
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return; // statisk header, alltid synlig
+
+    let yTo: ReturnType<typeof gsap.quickTo>;
+    const ctx = gsap.context(() => {
+      yTo = gsap.quickTo(header, "yPercent", { duration: 0.5, ease: "power3.out" });
+    }, header);
+
+    let lastY = window.scrollY;
+    let hidden = false;
+
+    const onScroll = () => {
+      const y = Math.max(0, window.scrollY);
+      const delta = y - lastY;
+      setScrolled(y > 40);
+
+      if (openRef.current || y < 120) {
+        if (hidden) {
+          hidden = false;
+          yTo(0);
+        }
+      } else if (delta > 4 && !hidden) {
+        hidden = true;
+        yTo(-100);
+      } else if (delta < -4 && hidden) {
+        hidden = false;
+        yTo(0);
+      }
+
+      lastY = y;
+    };
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    onScroll();
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      ctx.revert();
+    };
   }, []);
 
   // Stäng menyn vid navigering
@@ -45,7 +100,8 @@ export default function Header() {
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-[100] transition-[background-color,backdrop-filter,border-color] duration-500 ${
+        ref={headerRef}
+        className={`fixed inset-x-0 top-0 z-[100] will-change-transform transition-[background-color,backdrop-filter,border-color] duration-500 ${
           scrolled && !open
             ? "border-b border-[var(--color-line)] bg-[rgba(5,5,5,0.72)] backdrop-blur-xl"
             : "border-b border-transparent"

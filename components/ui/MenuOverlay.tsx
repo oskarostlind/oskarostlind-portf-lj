@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { gsap } from "gsap";
 import { Link } from "@/i18n/navigation";
 import { site } from "@/lib/site";
 import { featuredProjects } from "@/lib/projects";
@@ -27,7 +28,50 @@ export default function MenuOverlay({
 }) {
   const t = useTranslations("nav");
   const ref = useRef<HTMLDivElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
+  const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const [hovered, setHovered] = useState<number | null>(null);
+
+  // Cinematisk öppning/stängning: bakgrunden wipe:ar in med expo.out, länkarna
+  // följer staggrat som maskade rader (yPercent 110 → 0). Stängningen är
+  // snabbare och mindre uppdelad — man ska aldrig behöva vänta ut menyn.
+  useEffect(() => {
+    const bg = bgRef.current;
+    const links = linkRefs.current.filter((el): el is HTMLAnchorElement => el !== null);
+    const footer = footerRef.current;
+    if (!bg || links.length === 0) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return; // CSS:en (opacity/visibility) sköter visningen statiskt
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+
+      if (open) {
+        tl.fromTo(bg, { yPercent: -100 }, { yPercent: 0, duration: 0.9, ease: "expo.out" }).fromTo(
+          links,
+          { yPercent: 110 },
+          { yPercent: 0, duration: 0.7, ease: "expo.out", stagger: 0.08 },
+          0.15
+        );
+        if (footer) {
+          tl.fromTo(footer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5, ease: "power3.out" }, 0.55);
+        }
+      } else {
+        tl.to(links, { yPercent: 110, duration: 0.32, ease: "power2.in", stagger: 0.025 }).to(
+          bg,
+          { yPercent: -100, duration: 0.38, ease: "power2.in" },
+          "<0.04"
+        );
+        if (footer) {
+          tl.to(footer, { autoAlpha: 0, duration: 0.2, ease: "power2.in" }, 0);
+        }
+      }
+    });
+
+    return () => ctx.revert();
+  }, [open]);
 
   // Esc stänger, och fokus fångas i overlayen medan den är öppen
   useEffect(() => {
@@ -68,7 +112,7 @@ export default function MenuOverlay({
     document.addEventListener("keydown", onKey);
     const timer = window.setTimeout(() => {
       ref.current?.querySelector<HTMLElement>("a[href]")?.focus();
-    }, 420);
+    }, 380);
 
     return () => {
       document.removeEventListener("keydown", onKey);
@@ -91,12 +135,8 @@ export default function MenuOverlay({
         open ? "visible opacity-100" : "invisible opacity-0"
       }`}
     >
-      {/* Bakgrund */}
-      <div
-        className={`absolute inset-0 bg-[var(--color-void)] transition-transform duration-[900ms] ease-[var(--ease-in-out-quart)] ${
-          open ? "translate-y-0" : "-translate-y-full"
-        }`}
-      />
+      {/* Bakgrund — wipe:as in/ut av gsap ovan, ingen CSS-transition på transform */}
+      <div ref={bgRef} className="absolute inset-0 bg-[var(--color-void)] will-change-transform" />
 
       {/* Levande gradient bakom menyn */}
       <div
@@ -120,15 +160,14 @@ export default function MenuOverlay({
               <li key={link.href} className="overflow-hidden">
                 <Link
                   href={link.href}
+                  ref={(el) => {
+                    linkRefs.current[i] = el;
+                  }}
                   onMouseEnter={() => setHovered(i)}
                   onMouseLeave={() => setHovered(null)}
                   onFocus={() => setHovered(i)}
                   onBlur={() => setHovered(null)}
-                  className="group inline-flex items-baseline gap-4 py-1 transition-transform duration-[800ms] ease-[var(--ease-out-expo)] sm:gap-8"
-                  style={{
-                    transform: open ? "translateY(0)" : "translateY(110%)",
-                    transitionDelay: open ? `${180 + i * 60}ms` : "0ms",
-                  }}
+                  className="group inline-flex items-baseline gap-4 py-1 will-change-transform sm:gap-8"
                 >
                   <span className="font-[family-name:var(--font-mono)] text-[0.65rem] text-[var(--color-dim)] transition-colors duration-300 group-hover:text-[var(--color-accent)]">
                     0{i + 1}
@@ -143,11 +182,8 @@ export default function MenuOverlay({
         </nav>
 
         <div
-          className="hairline flex flex-col gap-4 pt-6 text-sm text-[var(--color-muted)] transition-opacity duration-700 sm:flex-row sm:items-center sm:justify-between"
-          style={{
-            opacity: open ? 1 : 0,
-            transitionDelay: open ? "560ms" : "0ms",
-          }}
+          ref={footerRef}
+          className="hairline flex flex-col gap-4 pt-6 text-sm text-[var(--color-muted)] sm:flex-row sm:items-center sm:justify-between"
         >
           <a
             href={`mailto:${site.email}`}

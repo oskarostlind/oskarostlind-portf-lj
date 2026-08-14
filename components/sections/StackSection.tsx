@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import SectionHead from "@/components/ui/SectionHead";
-import Reveal from "@/components/ui/Reveal";
 import { stackGroups } from "@/lib/stack";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { fxItems, fxScene, useScrollFx } from "@/lib/scrollFx";
+import "./motion.css";
 
 const accentFor = (i: number) => `hsl(${186 + ((i * 37) % 40)} 100% 62%)`;
 
@@ -41,6 +42,17 @@ export default function StackSection() {
   const [active, setActive] = useState<number | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const sphereRef = useRef<HTMLDivElement>(null);
+
+  /* Stackgrupperna kommer in en och en efter rubriken. Sfären lämnas orörd —
+     den roterar redan av sig själv, och att dessutom tona in den hade blivit
+     två rörelser som konkurrerar om samma yta. */
+  const fxRef = useScrollFx<HTMLDivElement>((scope) => {
+    const tl = fxScene(scope);
+    fxItems(tl, scope.querySelectorAll("[data-fx-item]"), {
+      stagger: 0.08,
+      y: 26,
+    });
+  });
 
   const rot = useRef({ x: -0.18, y: 0 });
   const vel = useRef({ x: 0, y: 0.0022 });
@@ -163,9 +175,12 @@ export default function StackSection() {
       )}
 
       {/* Tillgänglig, alltid närvarande lista — även fallback på mobil */}
-      <div className="shell mt-12 grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-3 md:mt-16">
+      <div
+        ref={fxRef}
+        className="shell mt-12 grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-3 md:mt-16"
+      >
         {stackGroups.map((group, gi) => (
-          <Reveal key={group.id} delay={gi * 60}>
+          <div key={group.id} data-fx-item>
             <h3 className="eyebrow" style={{ color: accentFor(gi) }}>
               {group.label[locale]}
             </h3>
@@ -179,7 +194,7 @@ export default function StackSection() {
                 </li>
               ))}
             </ul>
-          </Reveal>
+          </div>
         ))}
       </div>
     </section>

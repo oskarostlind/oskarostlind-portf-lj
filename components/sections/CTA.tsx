@@ -1,16 +1,67 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { gsap } from "gsap";
 import { Link } from "@/i18n/navigation";
-import Reveal from "@/components/ui/Reveal";
+import { fxItems, fxScene, fxText, useScrollFx } from "@/lib/scrollFx";
 import { site } from "@/lib/site";
+import "./motion.css";
 
+/**
+ * Sidans sista andetag. Rubriken är den stora textreveal:en — rad för rad,
+ * genom mask, med en oskärpa som klarnar. Etiketten går först, brödtexten
+ * ord för ord efter, och knappen sist. Skenet i botten driver långsamt uppåt
+ * under hela passagen så att sektionen har djup utan att röra på texten.
+ */
 export default function CTA() {
   const t = useTranslations("cta");
 
+  const ref = useScrollFx<HTMLElement>((scope) => {
+    const tl = fxScene(scope, { start: "top 78%" });
+
+    fxText(tl, scope.querySelector<HTMLElement>("[data-fx-eyebrow]"), {
+      mode: "words",
+      stagger: 0.03,
+    });
+    fxText(tl, scope.querySelector<HTMLElement>("[data-fx-title]"), {
+      mode: "lines",
+      stagger: 0.13,
+      at: 0.14,
+    });
+    fxText(tl, scope.querySelector<HTMLElement>("[data-fx-body]"), {
+      mode: "words",
+      stagger: 0.02,
+      at: 0.52,
+    });
+    fxItems(tl, scope.querySelectorAll("[data-fx-item]"), {
+      at: 0.66,
+      y: 22,
+    });
+
+    const glow = scope.querySelector<HTMLElement>("[data-fx-glow]");
+    if (glow) {
+      gsap.fromTo(
+        glow,
+        { yPercent: 8 },
+        {
+          yPercent: -8,
+          ease: "none",
+          scrollTrigger: {
+            trigger: scope,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.2,
+            invalidateOnRefresh: true,
+          },
+        }
+      );
+    }
+  });
+
   return (
-    <section className="relative overflow-hidden py-32 md:py-44">
+    <section ref={ref} className="relative overflow-hidden py-32 md:py-44">
       <div
+        data-fx-glow
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
@@ -19,17 +70,25 @@ export default function CTA() {
         }}
       />
       <div className="shell text-center">
-        <Reveal as="p" className="eyebrow">
+        <p data-fx-text data-fx-eyebrow className="eyebrow">
           {t("eyebrow")}
-        </Reveal>
-        <Reveal as="h2" delay={80} className="display-lg mx-auto mt-6 max-w-[16ch]">
+        </p>
+        <h2
+          data-fx-text
+          data-fx-title
+          className="display-lg mx-auto mt-6 max-w-[16ch]"
+        >
           {t("title")}
-        </Reveal>
-        <Reveal as="p" delay={160} className="lede mx-auto mt-6 text-center">
+        </h2>
+        <p
+          data-fx-text
+          data-fx-body
+          className="lede mx-auto mt-6 text-center"
+        >
           {t("body")}
-        </Reveal>
+        </p>
 
-        <Reveal delay={240} className="mt-12">
+        <div data-fx-item className="mt-12">
           <Link
             href="/kontakt"
             data-magnetic
@@ -65,7 +124,7 @@ export default function CTA() {
               {site.email}
             </a>
           </p>
-        </Reveal>
+        </div>
       </div>
     </section>
   );

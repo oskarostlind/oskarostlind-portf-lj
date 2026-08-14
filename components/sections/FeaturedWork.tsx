@@ -5,11 +5,17 @@ import { Link } from "@/i18n/navigation";
 import SectionHead from "@/components/ui/SectionHead";
 import ArrowLink from "@/components/ui/ArrowLink";
 import ProjectCard from "@/components/ui/ProjectCard";
+import { fxCardGrid, useScrollFx } from "@/lib/scrollFx";
 import { featuredProjects } from "@/lib/projects";
+import "./motion.css";
 
 export default function FeaturedWork() {
   const t = useTranslations("work");
   const locale = useLocale() as "sv" | "en";
+
+  /* Korten avlöser varandra kolumnvis och bildytorna driver långsammare än
+     sidan. Koreografin ligger här på wrapper-nivå — ProjectCard är orörd. */
+  const gridRef = useScrollFx<HTMLDivElement>((scope) => fxCardGrid(scope));
 
   return (
     <section id="arbeten" className="py-28 md:py-40">
@@ -22,7 +28,11 @@ export default function FeaturedWork() {
         />
       </div>
 
-      <div className="shell mt-16 grid gap-6 md:grid-cols-2 md:gap-8">
+      <div
+        ref={gridRef}
+        data-fx-cards
+        className="shell mt-16 grid gap-6 md:grid-cols-2 md:gap-8"
+      >
         {featuredProjects.map((project, i) => {
           /* Första caset får full bredd — det bär mest tyngd. Blir det udda
              antal kvar efter det hamnar det sista ensamt i vänsterkolumnen

@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import ProjectCard from "@/components/ui/ProjectCard";
-import Reveal from "@/components/ui/Reveal";
 import PageHead from "@/components/ui/PageHead";
+import { fxCardGrid, fxItems, fxScene, useScrollFx } from "@/lib/scrollFx";
 import { allProjects, categories, type Category } from "@/lib/projects";
+import "./motion.css";
 
 export default function WorkIndex() {
   const t = useTranslations("work");
@@ -20,44 +21,57 @@ export default function WorkIndex() {
     [filter]
   );
 
+  const filterRef = useScrollFx<HTMLDivElement>((scope) => {
+    fxItems(fxScene(scope), scope.querySelectorAll("[data-fx-item]"), { y: 18 });
+  });
+
+  /* Rutnätet sätts upp på nytt när filtret ändras: urvalet är ett annat, och
+     de kort som blir kvar ska komma in i sin nya ordning. */
+  const gridRef = useScrollFx<HTMLDivElement>((scope) => fxCardGrid(scope), [
+    filter,
+  ]);
+
   return (
     <>
       <PageHead eyebrow={t("eyebrow")} title={t("allTitle")} intro={t("allIntro")} />
 
       <div className="shell">
-        <Reveal>
-          <div
-            role="group"
-            aria-label={t("filterLabel")}
-            className="hairline flex flex-wrap gap-2 pt-8"
+        <div
+          ref={filterRef}
+          role="group"
+          aria-label={t("filterLabel")}
+          className="hairline flex flex-wrap gap-2 pt-8"
+        >
+          <FilterButton
+            active={filter === "all"}
+            onClick={() => setFilter("all")}
+            count={allProjects.length}
           >
-            <FilterButton
-              active={filter === "all"}
-              onClick={() => setFilter("all")}
-              count={allProjects.length}
-            >
-              {t("filterAll")}
-            </FilterButton>
-            {categories.map((cat) => {
-              const count = allProjects.filter((p) =>
-                p.categories.includes(cat.id)
-              ).length;
-              if (count === 0) return null;
-              return (
-                <FilterButton
-                  key={cat.id}
-                  active={filter === cat.id}
-                  onClick={() => setFilter(cat.id)}
-                  count={count}
-                >
-                  {cat.label[locale]}
-                </FilterButton>
-              );
-            })}
-          </div>
-        </Reveal>
+            {t("filterAll")}
+          </FilterButton>
+          {categories.map((cat) => {
+            const count = allProjects.filter((p) =>
+              p.categories.includes(cat.id)
+            ).length;
+            if (count === 0) return null;
+            return (
+              <FilterButton
+                key={cat.id}
+                active={filter === cat.id}
+                onClick={() => setFilter(cat.id)}
+                count={count}
+              >
+                {cat.label[locale]}
+              </FilterButton>
+            );
+          })}
+        </div>
 
-        <div className="mt-12 grid gap-6 pb-28 md:grid-cols-2 md:gap-8">
+        <div
+          ref={gridRef}
+          data-fx-cards
+          className="mt-12 grid gap-6 pb-28 md:grid-cols-2 md:gap-8"
+        >
           {visible.map((project, i) => (
             <ProjectCard
               key={project.slug}
@@ -91,6 +105,7 @@ function FilterButton({
   return (
     <button
       type="button"
+      data-fx-item
       onClick={onClick}
       aria-pressed={active}
       className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors duration-300 ${

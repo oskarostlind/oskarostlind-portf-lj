@@ -1,0 +1,118 @@
+/* ------------------------------------------------------------------------
+   Sektionernas rörelselager.
+
+   Allt som GÖMMER innehåll ligger bakom `html.has-motion`, klassen som
+   SmoothScroll tänder först när JS kört och `prefers-reduced-motion` inte är
+   satt. Utan JS — och för den som bett om mindre rörelse — syns allting.
+
+   Reglerna här ligger utanför Tailwinds `@layer utilities` och vinner därför
+   över utility-klasserna oavsett specificitet. Håll dem få och riktade.
+   ------------------------------------------------------------------------ */
+
+html.has-motion [data-fx-text],
+html.has-motion [data-fx-item] {
+  visibility: hidden;
+}
+
+/* Siffrorna i Stats göms med opacity i stället för visibility: `innerText`
+   returnerar tom sträng för element med `visibility: hidden`, och räknaren
+   skulle då aldrig få något startvärde att räkna från. */
+html.has-motion [data-fx-num] {
+  opacity: 0;
+}
+
+/* --- Masker som texten glider upp genom -------------------------------- */
+
+/* Klippboxen måste ge plats åt Å/Ä/Ö-prickar och underlängderna i g, j, p —
+   display-graderna har line-height under 1 och radboxen är alltså lägre än
+   glyferna. Paddingen skapar utrymmet, de negativa marginalerna tar tillbaka
+   det så att radavståndet blir exakt som utan mask. */
+.fx-word-mask,
+.fx-line-mask {
+  overflow: hidden;
+  padding-top: 0.14em;
+  padding-bottom: 0.22em;
+  margin-top: -0.14em;
+  margin-bottom: -0.22em;
+}
+
+.fx-word-mask {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.fx-line-mask {
+  display: block;
+}
+
+/* Radmaskerna är block och ligger kant i kant — deras negativa marginaler
+   skulle kollapsa till den mest negativa av de två (−0.22em i stället för
+   −0.36em) och radavståndet växa. Flex-kolumn kollapsar inte marginaler
+   mellan sina barn. Attributet sätts av splitLines och tas bort igen när
+   texten återställs, så det här gäller bara under själva avslöjandet. */
+html.has-motion [data-fx-split="lines"] {
+  display: flex;
+  flex-direction: column;
+}
+
+.fx-word {
+  display: inline-block;
+}
+
+.fx-line {
+  display: block;
+  will-change: transform, opacity, filter;
+}
+
+/* --- Process: pinnad scen ---------------------------------------------- */
+
+/* Layouten sätts utan `has-motion`-villkor. Scenen ska mäta lika mycket före
+   som efter hydrering — annars hoppar sidan när klassen tänds — och en
+   centrerad helskärmssektion är ett fullgott statiskt utseende. */
+@media (min-width: 1024px) {
+  .fx-process {
+    display: flex;
+    align-items: center;
+    min-height: 100svh;
+    padding-block: 0;
+  }
+
+  .fx-process > .shell {
+    width: 100%;
+  }
+}
+
+/* Progresslinjen och stegens punkter ritas av GSAP. Utan rörelse ligger de
+   färdigritade, vilket är det korrekta statiska tillståndet. */
+html.has-motion [data-fx-line] {
+  transform: scaleX(0);
+}
+
+html.has-motion [data-fx-dot] {
+  transform: scale(0);
+}
+
+/* --- Projektkort -------------------------------------------------------- */
+
+/* Projektkorten bär `.reveal`-primitiven från ProjectCard, som lämnas orörd.
+   Här släcks bara dess CSS-övergång i de grid som GSAP koreograferar, så att
+   de två aldrig drar i samma element. GSAP skriver inline och tar över. */
+html.has-motion [data-fx-cards] > .reveal,
+html.has-motion [data-fx-cards] > .reveal.is-in {
+  opacity: 0;
+  transform: translateY(1.75rem);
+  transition: none;
+}
+
+/* Bildytan får överhöjd så att parallaxdriften aldrig blottar underkanten.
+   `!important` behövs bara för att slå next/image `fill`, som skriver
+   height/top som inline-style. */
+html.has-motion [data-fx-parallax] {
+  height: 118% !important;
+  top: -9% !important;
+  bottom: auto !important;
+  will-change: transform;
+  /* GSAP äger `transform`. Hover-zoomen ligger på den fristående
+     `scale`-egenskapen i Tailwind 4 och får behålla sin övergång. */
+  transition-property: scale, opacity, color;
+}

@@ -11,26 +11,40 @@ type Props = {
 
 /** Länk med pil som glider iväg vid hover. Används genomgående för CTA:er. */
 export default function ArrowLink({ children, className = "", ...rest }: Props) {
+  // Dubbel-pil-hover: originalpilen glider ut och tonar bort samtidigt som
+  // en kopia glider in från vänster — ren CSS (group-hover) räcker här, ingen
+  // JS-cursor behövs för en så pass enkel överlappande övergång.
+  const arrow = (
+    <path
+      d="M2 8h11M9 4l4 4-4 4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  );
+
   const inner = (
     <>
       <span className="relative">
         {children}
         <span className="absolute -bottom-0.5 left-0 h-px w-full origin-right scale-x-0 bg-current transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:origin-left group-hover:scale-x-100" />
       </span>
-      <svg
-        aria-hidden
-        viewBox="0 0 16 16"
-        className="h-3.5 w-3.5 transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1"
-      >
-        <path
-          d="M2 8h11M9 4l4 4-4 4"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <span aria-hidden className="relative block h-3.5 w-3.5">
+        <svg
+          viewBox="0 0 16 16"
+          className="absolute inset-0 h-3.5 w-3.5 transition-[transform,opacity] duration-[350ms] ease-[var(--ease-out-expo)] group-hover:translate-x-1.5 group-hover:opacity-0"
+        >
+          {arrow}
+        </svg>
+        <svg
+          viewBox="0 0 16 16"
+          className="absolute inset-0 h-3.5 w-3.5 -translate-x-1.5 opacity-0 transition-[transform,opacity] duration-[350ms] ease-[var(--ease-out-expo)] group-hover:translate-x-0 group-hover:opacity-100"
+        >
+          {arrow}
+        </svg>
+      </span>
     </>
   );
 

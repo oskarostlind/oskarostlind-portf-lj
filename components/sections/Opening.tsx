@@ -26,7 +26,7 @@ const HeroScene = dynamic(() => import("@/components/three/HeroScene"), {
 export default function Opening() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
-  const progressRef = useRef<FieldProgress>({ dissolve: 0, drift: 0 });
+  const progressRef = useRef<FieldProgress>({ dissolve: 0, drift: 0, depth: 0 });
 
   const reduced = useReducedMotion();
   const lowPower = useIsLowPower();
@@ -38,8 +38,9 @@ export default function Opening() {
   useEffect(() => setMounted(true), []);
 
   // Scrollprogress genom öppningen: dissolve driver upplösningen, drift driver
-  // utplattningen till bakgrundsfält. Mätningen sker i rAF för att inte
-  // trigga layout på varje scroll-event.
+  // utplattningen till bakgrundsfält, depth backar kameran och ger fältet
+  // tillbaka sitt djup när manifestet rullar förbi. Mätningen sker i rAF för
+  // att inte trigga layout på varje scroll-event.
   useEffect(() => {
     let frame = 0;
     let queued = false;
@@ -57,6 +58,13 @@ export default function Opening() {
 
       progressRef.current.dissolve = clamp(scrolled / (vh * 0.9));
       progressRef.current.drift = clamp((scrolled - vh * 0.8) / (vh * 0.9));
+      // Tredje fasen är avsiktligt trögare och överlappar de två andra: den
+      // rör bara kameran och fältets z-spann, inte formen, så de befintliga
+      // kurvorna för dissolve och drift lämnas orörda. Startpunkten ligger
+      // mitt i upplösningen eftersom lagret tonas ut redan strax efter att
+      // manifestet passerat — väntar djupet till drift är i mål hinner det
+      // aldrig synas.
+      progressRef.current.depth = clamp((scrolled - vh * 0.6) / (vh * 1.1));
 
       // Fältet tonas ut när öppningen är på väg ur vyn, så att det aldrig
       // syns bakom sektionerna som följer.
@@ -105,7 +113,9 @@ export default function Opening() {
         {show3d ? (
           /* Canvasen avmonteras helt när öppningen lämnat vyn — ingen
              renderloop får ticka bakom resten av sidan. */
-          inView ? <HeroScene progressRef={progressRef} /> : null
+          inView ? (
+            <HeroScene progressRef={progressRef} surfaceRef={wrapperRef} />
+          ) : null
         ) : (
           <div
             className="absolute inset-0"
