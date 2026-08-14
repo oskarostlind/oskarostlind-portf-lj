@@ -62,10 +62,14 @@ export default function Process() {
       cards.forEach((card, i) => {
         const at = i * 0.92;
 
+        // Inget blur här: timelinen är scrubbad, så filtret hade räknats om på
+        // varje scrolltick. Utan GPU (t.ex. svartlistad WebGL) rasteriseras
+        // blur i mjukvara och kan frysa hela renderern. Engångs-reveals får
+        // blura; scrubbade scener animerar bara transform/opacity.
         tl.fromTo(
           card,
-          { autoAlpha: 0, y: 40, filter: "blur(6px)" },
-          { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.9 },
+          { autoAlpha: 0, y: 40 },
+          { autoAlpha: 1, y: 0, duration: 0.9 },
           at
         );
 
