@@ -60,23 +60,30 @@ export function hasMotion(): boolean {
 
 /** Återställer elementet till oskuren text och glömmer uppdelningen. */
 export function restoreText(el: HTMLElement): void {
-  const stored = el.dataset.fxText;
+  const stored = el.dataset.fxSource;
   if (stored === undefined) return;
   el.textContent = stored;
   el.removeAttribute("aria-label");
-  delete el.dataset.fxText;
+  delete el.dataset.fxSource;
   delete el.dataset.fxSplit;
 }
 
-/** Läser originaltexten och nollställer elementet inför en ny uppdelning. */
+/**
+ * Läser originaltexten och nollställer elementet inför en ny uppdelning.
+ *
+ * OBS: lagringsnyckeln måste vara `fxSource`, INTE `fxText` — komponenterna
+ * använder `data-fx-text` som tomt markörattribut i JSX, vilket React
+ * renderar som strängen "true". Hade vi läst samma nyckel skulle "true"
+ * ersätta rubriktexten (det hände i prod 2026-08-14).
+ */
 function prepare(el: HTMLElement): string {
-  const stored = el.dataset.fxText;
+  const stored = el.dataset.fxSource;
   if (stored !== undefined) {
     el.textContent = stored;
     return stored;
   }
   const text = el.textContent ?? "";
-  el.dataset.fxText = text;
+  el.dataset.fxSource = text;
   el.setAttribute("aria-label", text.trim());
   return text;
 }

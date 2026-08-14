@@ -173,7 +173,9 @@ const vertexShader = /* glsl */ `
 
 const fragmentShader = /* glsl */ `
   precision mediump float;
-  uniform float uScroll;
+  // highp krävs: vertexshadern deklarerar uScroll som highp (default där),
+  // och ANGLE/Windows vägrar länka program där stadiernas precision skiljer.
+  uniform highp float uScroll;
   varying float vNoise;
   varying vec3  vPos;
   varying float vDrift;
