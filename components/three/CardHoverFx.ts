@@ -351,21 +351,33 @@ export function leave(target: HTMLElement) {
   start();
 }
 
-function destroy() {
+/**
+ * Vila mellan sidor: stoppa loopen, koppla loss canvasen och släpp texturerna
+ * — men BEHÅLL renderern. Att riva WebGL-kontexten vid varje navigering
+ * (tidigare via forceContextLoss) fick Chrome att räkna kontextförluster och
+ * till slut svartlista hela domänen för WebGL, vilket sänkte även heron och
+ * kraschade appen i prod (2026-08-14). En vilande kontext kostar nästan
+ * inget; nästa hover återanvänder den direkt.
+ */
+function suspend() {
   stop();
   resizeObserver?.disconnect();
   resizeObserver = null;
   host = null;
   if (!ctx) return;
-
-  ctx.renderer.domElement.removeEventListener("webglcontextlost", onContextLost);
   ctx.renderer.domElement.remove();
   textures.forEach((texture) => texture.dispose());
   textures.clear();
+}
+
+/** Slutgiltig rivning — körs BARA när browsern själv tagit kontexten ifrån oss. */
+function destroy() {
+  suspend();
+  if (!ctx) return;
+  ctx.renderer.domElement.removeEventListener("webglcontextlost", onContextLost);
   ctx.geometry.dispose();
   ctx.material.dispose();
   ctx.renderer.dispose();
-  ctx.renderer.forceContextLoss();
   ctx = null;
 }
 
@@ -391,8 +403,9 @@ export function useCardHoverFx(
       // faktiskt håller canvasen. Skulle kortet försvinna under pekaren (filter,
       // navigering) vore alternativet en loop som ritar i en föräldralös canvas.
       detach(hostRef.current);
-      // Sista kortet lämnar sidan → riv hela riggen, inte bara canvasen.
-      if (users <= 0) destroy();
+      // Sista kortet lämnar sidan → låt riggen vila, men riv den inte:
+      // kontexten återanvänds på nästa sida (se kommentaren vid suspend).
+      if (users <= 0) suspend();
     };
   }, [enabled, hostRef]);
 

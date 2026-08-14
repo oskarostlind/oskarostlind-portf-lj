@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -366,6 +366,38 @@ function Points({
   );
 }
 
+/**
+ * Sond: kan browsern ge oss en WebGL-kontext just nu? Chrome kan svartlista
+ * en domän efter upprepade kontextförluster, och då KASTAR three vid
+ * Canvas-monteringen — utan den här kollen (och felgränsen nedan) rev det
+ * felet hela React-trädet i prod: "Application error" på varje sida.
+ * Sonden körs en gång per sidvisning och kostar en engångskontext.
+ */
+let webglProbe: boolean | null = null;
+function webglOk(): boolean {
+  if (webglProbe !== null) return webglProbe;
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
+    webglProbe = !!gl;
+    (gl as WebGLRenderingContext | null)?.getExtension("WEBGL_lose_context")?.loseContext();
+  } catch {
+    webglProbe = false;
+  }
+  return webglProbe;
+}
+
+/** Sista skyddsnätet: renderar ingenting om Canvas ändå kastar. */
+class SceneBoundary extends Component<{ children: ReactNode }, { broken: boolean }> {
+  state = { broken: false };
+  static getDerivedStateFromError() {
+    return { broken: true };
+  }
+  render() {
+    return this.state.broken ? null : this.props.children;
+  }
+}
+
 export default function HeroScene({
   progressRef,
   surfaceRef,
@@ -374,15 +406,25 @@ export default function HeroScene({
   /** Ytan där klick ska ge impuls — normalt hela öppningen. */
   surfaceRef?: React.RefObject<HTMLElement | null>;
 }) {
+  // Sondera först efter mount — SSR-html:en ska vara identisk med klientens.
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (webglOk()) setReady(true);
+  }, []);
+
+  if (!ready) return null;
+
   return (
-    <Canvas
-      aria-hidden
-      camera={{ position: [0, 0, 4.2], fov: 45 }}
-      dpr={[1, 1.75]}
-      gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
-      style={{ pointerEvents: "none" }}
-    >
-      <Points progressRef={progressRef} surfaceRef={surfaceRef} />
-    </Canvas>
+    <SceneBoundary>
+      <Canvas
+        aria-hidden
+        camera={{ position: [0, 0, 4.2], fov: 45 }}
+        dpr={[1, 1.75]}
+        gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
+        style={{ pointerEvents: "none" }}
+      >
+        <Points progressRef={progressRef} surfaceRef={surfaceRef} />
+      </Canvas>
+    </SceneBoundary>
   );
 }
