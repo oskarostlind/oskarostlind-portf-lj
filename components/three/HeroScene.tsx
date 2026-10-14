@@ -1,8 +1,9 @@
 "use client";
 
-import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Component, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { gpuCapable, markGpuSlow } from "@/lib/gpu";
 
 /**
  * Partikelfältet som bär hela öppningen.
@@ -37,6 +38,7 @@ const vertexShader = /* glsl */ `
   uniform float uAspect;
   uniform vec2  uBurstPos;
   uniform float uBurst;      // 1 vid klick, faller linjärt mot 0
+  uniform float uPixelRatio; // canvasens dpr — punktstorlek anges i CSS-pixlar
   varying float vNoise;
   varying vec3  vPos;
   varying float vDrift;
@@ -166,7 +168,12 @@ const vertexShader = /* glsl */ `
     // Punkterna krymper när fältet breder ut sig — annars blir det en vägg.
     // Kring pekaren och i impulsens ring får de däremot växa: det är den
     // detaljen som gör att interaktionen läses som fysisk.
-    gl_PointSize = (2.4 + pull * 2.2 + vGlow * 2.6) * (1.0 - uDrift * 0.42) * (300.0 / -mv.z);
+    //
+    // Storleken är i CSS-pixlar vid kamerans grundavstånd (4.2) och skalas med
+    // dpr. Tidigare stod det 300.0 / -mv.z här — en faktor ~70 för stort, så
+    // varje punkt blev 200–500 px och fältet smälte ihop till en vit klump över
+    // rubriken. Det kostade dessutom en minut per bildruta på mjukvaru-GPU.
+    gl_PointSize = (2.4 + pull * 2.2 + vGlow * 2.6) * (1.0 - uDrift * 0.42) * (4.2 / -mv.z) * uPixelRatio;
     gl_Position = projectionMatrix * mv;
   }
 `;
@@ -213,9 +220,13 @@ const fragmentShader = /* glsl */ `
 function Points({
   progressRef,
   surfaceRef,
+  onSlow,
+  frameCount,
 }: {
   progressRef: React.RefObject<FieldProgress>;
   surfaceRef?: React.RefObject<HTMLElement | null>;
+  onSlow: () => void;
+  frameCount: React.RefObject<number>;
 }) {
   const mesh = useRef<THREE.Points>(null);
   const { size } = useThree();
@@ -223,6 +234,9 @@ function Points({
   const smoothed = useRef(new THREE.Vector2(0, 0));
   const cursor = useRef(new THREE.Vector2(0, 0));
   const present = useRef(0);
+  // Bildrutevakt: de första bildrutorna avgör om hårdvaran orkar. Mäts i
+  // verklig tid, inte i R3F:s delta (som vi klampar nedan).
+  const perf = useRef({ frames: 0, start: 0, last: 0, stalls: 0, done: false });
 
   const geometry = useMemo(() => {
     // Punkttätheten skalas efter skärmyta — färre punkter på små skärmar.
@@ -246,6 +260,7 @@ function Points({
       uAspect: { value: 1 },
       uBurstPos: { value: new THREE.Vector2(0, 0) },
       uBurst: { value: 0 },
+      uPixelRatio: { value: 1 },
     }),
     []
   );
@@ -308,6 +323,26 @@ function Points({
 
   useFrame((state, delta) => {
     const d = Math.min(delta, 0.05);
+    frameCount.current += 1;
+
+    // Ger upp om GPU:n är för svag: två bildrutor över 250 ms, eller snitt
+    // under ~28 bilder/s över de första 90. De första fem hoppas över — där
+    // ligger shaderkompilering och uppladdning, inte stadig rendering.
+    const p = perf.current;
+    if (!p.done) {
+      const now = performance.now();
+      p.frames += 1;
+      if (p.frames === 5) p.start = now;
+      if (p.frames > 1 && now - p.last > 250) p.stalls += 1;
+      p.last = now;
+      const avg = p.frames > 5 ? (now - p.start) / (p.frames - 5) : 0;
+      if (p.stalls >= 2 || (p.frames >= 95 && avg > 1000 / 28)) {
+        p.done = true;
+        onSlow();
+        return;
+      }
+      if (p.frames >= 95) p.done = true;
+    }
 
     // Två eftersläp av samma pekare: det tröga bär den globala lutningen och
     // rotationen, det snabba bär den lokala repulsionen. Ett enda värde kan
@@ -323,6 +358,7 @@ function Points({
     uniforms.uCursor.value.copy(cursor.current);
     uniforms.uCursorIn.value += (present.current - uniforms.uCursorIn.value) * 0.09;
     uniforms.uAspect.value = state.size.width / Math.max(1, state.size.height);
+    uniforms.uPixelRatio.value = state.viewport.dpr;
     uniforms.uScroll.value += (target.dissolve - uniforms.uScroll.value) * 0.09;
     uniforms.uDrift.value += (target.drift - uniforms.uDrift.value) * 0.07;
     uniforms.uDepth.value += ((target.depth ?? 0) - uniforms.uDepth.value) * 0.06;
@@ -366,27 +402,6 @@ function Points({
   );
 }
 
-/**
- * Sond: kan browsern ge oss en WebGL-kontext just nu? Chrome kan svartlista
- * en domän efter upprepade kontextförluster, och då KASTAR three vid
- * Canvas-monteringen — utan den här kollen (och felgränsen nedan) rev det
- * felet hela React-trädet i prod: "Application error" på varje sida.
- * Sonden körs en gång per sidvisning och kostar en engångskontext.
- */
-let webglProbe: boolean | null = null;
-function webglOk(): boolean {
-  if (webglProbe !== null) return webglProbe;
-  try {
-    const canvas = document.createElement("canvas");
-    const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
-    webglProbe = !!gl;
-    (gl as WebGLRenderingContext | null)?.getExtension("WEBGL_lose_context")?.loseContext();
-  } catch {
-    webglProbe = false;
-  }
-  return webglProbe;
-}
-
 /** Sista skyddsnätet: renderar ingenting om Canvas ändå kastar. */
 class SceneBoundary extends Component<{ children: ReactNode }, { broken: boolean }> {
   state = { broken: false };
@@ -401,18 +416,47 @@ class SceneBoundary extends Component<{ children: ReactNode }, { broken: boolean
 export default function HeroScene({
   progressRef,
   surfaceRef,
+  onUnavailable,
 }: {
   progressRef: React.RefObject<FieldProgress>;
   /** Ytan där klick ska ge impuls — normalt hela öppningen. */
   surfaceRef?: React.RefObject<HTMLElement | null>;
+  /** Anropas när scenen inte kan eller inte bör köras — föräldern visar fallback. */
+  onUnavailable?: () => void;
 }) {
   // Sondera först efter mount — SSR-html:en ska vara identisk med klientens.
+  // Chrome kan dessutom svartlista en domän efter upprepade kontextförluster;
+  // då KASTAR three vid Canvas-monteringen. Sonden (och felgränsen nedan)
+  // hindrar att det river hela React-trädet.
   const [ready, setReady] = useState(false);
-  useEffect(() => {
-    if (webglOk()) setReady(true);
-  }, []);
+  const [slow, setSlow] = useState(false);
+  const frameCount = useRef(0);
 
-  if (!ready) return null;
+  useEffect(() => {
+    if (gpuCapable()) setReady(true);
+    else onUnavailable?.();
+  }, [onUnavailable]);
+
+  const giveUp = useCallback(() => {
+    markGpuSlow();
+    setSlow(true);
+    onUnavailable?.();
+  }, [onUnavailable]);
+
+  // Vakthund oberoende av bildrutor: är GPU:n riktigt svag blir den första
+  // bildrutan aldrig klar, och då kör useFrame-vakten aldrig. En vanlig timer
+  // går ändå (huvudtråden är ledig, det är GPU-processen som står still).
+  // Under 15 bilder/s i snitt efter tre sekunder → statisk fallback.
+  useEffect(() => {
+    if (!ready || slow) return;
+    frameCount.current = 0;
+    const id = window.setTimeout(() => {
+      if (frameCount.current < 45) giveUp();
+    }, 3000);
+    return () => window.clearTimeout(id);
+  }, [ready, slow, giveUp]);
+
+  if (!ready || slow) return null;
 
   return (
     <SceneBoundary>
@@ -423,7 +467,12 @@ export default function HeroScene({
         gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
         style={{ pointerEvents: "none" }}
       >
-        <Points progressRef={progressRef} surfaceRef={surfaceRef} />
+        <Points
+          progressRef={progressRef}
+          surfaceRef={surfaceRef}
+          onSlow={giveUp}
+          frameCount={frameCount}
+        />
       </Canvas>
     </SceneBoundary>
   );

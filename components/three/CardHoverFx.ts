@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect } from "react";
 import * as THREE from "three";
+import { gpuCapable } from "@/lib/gpu";
 
 /**
  * WebGL-hover för casekorten: en ringvåg som utgår från pekaren, en långsam
@@ -120,6 +121,8 @@ export function cardFxAvailable() {
   if (!document.documentElement.classList.contains("has-motion")) return false;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
   if (window.matchMedia("(pointer: coarse)").matches) return false;
+  // Mjukvaru-WebGL (jobbdatorer, fjärrskrivbord) — hovern skulle stå och hacka.
+  if (!gpuCapable()) return false;
   return true;
 }
 

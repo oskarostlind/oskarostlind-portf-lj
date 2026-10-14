@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import Hero from "@/components/sections/Hero";
 import Manifest from "@/components/sections/Manifest";
@@ -32,8 +32,12 @@ export default function Opening() {
   const lowPower = useIsLowPower();
   const [mounted, setMounted] = useState(false);
   const [inView, setInView] = useState(true);
+  // Faller till false om GPU:n saknas, är mjukvarubaserad eller för långsam
+  // (se lib/gpu.ts) — då visas samma statiska gradient som vid reducerad rörelse.
+  const [gpuOk, setGpuOk] = useState(true);
+  const onUnavailable = useCallback(() => setGpuOk(false), []);
 
-  const show3d = mounted && !reduced && !lowPower;
+  const show3d = mounted && !reduced && !lowPower && gpuOk;
 
   useEffect(() => setMounted(true), []);
 
@@ -114,7 +118,11 @@ export default function Opening() {
           /* Canvasen avmonteras helt när öppningen lämnat vyn — ingen
              renderloop får ticka bakom resten av sidan. */
           inView ? (
-            <HeroScene progressRef={progressRef} surfaceRef={wrapperRef} />
+            <HeroScene
+              progressRef={progressRef}
+              surfaceRef={wrapperRef}
+              onUnavailable={onUnavailable}
+            />
           ) : null
         ) : (
           <div
