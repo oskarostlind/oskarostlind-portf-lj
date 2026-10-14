@@ -32,19 +32,17 @@ Sajten körs på http://localhost:3000. Svenska ligger på roten, engelska under
 Skapa `.env.local` från `.env.example`:
 
 ```
-SMTP_HOST=smtp.gmail.com
+SMTP_HOST=smtp.strato.de
 SMTP_PORT=465
-SMTP_USER=oskarandreassen01@gmail.com
-SMTP_PASS=<app-lösenord>
-CONTACT_TO=oskarandreassen01@gmail.com
+SMTP_USER=info@oskarostlind.se
+SMTP_PASS=<lösenordet till info@ i Strato>
+CONTACT_TO=info@oskarostlind.se
 NEXT_PUBLIC_SITE_URL=https://oskarostlind.se
 ```
 
 Alla sex behövs. `NEXT_PUBLIC_SITE_URL` styr canonical-URL:er, sitemap, hreflang och OG-bilder — sätt den till `http://localhost:3000` lokalt.
 
-`SMTP_PASS` är **inte** ditt Google-lösenord. Skapa ett app-lösenord på https://myaccount.google.com/apppasswords (kräver tvåstegsverifiering). Klistra in det utan mellanslag.
-
-Gmail tillåter 500 mejl per dygn på ett vanligt konto — mer än nog för ett kontaktformulär.
+`SMTP_PASS` är lösenordet för mejlkontot `info@oskarostlind.se` hos Strato. Formuläret skickar från och till info@ — DMARC för domänen är `p=reject`, så avsändaren måste autentisera mot Strato, aldrig mot Gmail.
 
 ## Lägga till ett nytt case
 

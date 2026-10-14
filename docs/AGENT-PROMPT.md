@@ -133,7 +133,7 @@ Allt innehåll i `messages/sv.json` och `messages/en.json`. Ingen hårdkodad tex
 ## INNEHÅLL
 
 - **Namn:** Oskar Östlind
-- **Mejl:** oskarandreassen01@gmail.com
+- **Mejl:** info@oskarostlind.se
 - **GitHub:** https://github.com/oskarostlind
 - **LinkedIn:** https://www.linkedin.com/in/oskar-östlind-8a5b59234/
 - **Ort:** [DIN ORT]

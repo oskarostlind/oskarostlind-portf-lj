@@ -158,11 +158,11 @@ git push -u origin main
 
 | Nyckel | Värde |
 |---|---|
-| `SMTP_HOST` | `smtp.gmail.com` |
+| `SMTP_HOST` | `smtp.strato.de` |
 | `SMTP_PORT` | `465` |
-| `SMTP_USER` | `oskarandreassen01@gmail.com` |
-| `SMTP_PASS` | Gmail-app-lösenord — skapas på myaccount.google.com/apppasswords |
-| `CONTACT_TO` | `oskarandreassen01@gmail.com` |
+| `SMTP_USER` | `info@oskarostlind.se` |
+| `SMTP_PASS` | Lösenordet till mejlkontot info@oskarostlind.se hos Strato |
+| `CONTACT_TO` | `info@oskarostlind.se` |
 | `NEXT_PUBLIC_SITE_URL` | `https://oskarostlind.se` |
 
 **4. Lägg till domänen i Vercel** (Settings → Domains): `oskarostlind.se` och `www.oskarostlind.se`. Vercel visar då exakt vilka poster som gäller.
@@ -224,6 +224,8 @@ git push -u origin main
 - **Statistiken på startsidan** använder 10 projekt, 90+ endpoints och 5 år. Alla tre är härledda ur GitHub-datan och bör dubbelkollas av Oskar innan lansering.
 
 ## Logg
+
+- **2026-10-14** — **Kontaktadressen är nu info@oskarostlind.se.** `site.email` bytt — slår igenom i footer, menyn, CTA, /kontakt, formulärets felmeddelande och JSON-LD. Domänens mejl ligger hos Strato (MX `smtp.rzone.de`, SPF `_spf.strato.com`, DMARC `p=reject`). Formulärets SMTP-dokumentation pekar om till Strato (`smtp.strato.de:465`, användare info@). **Kontaktformuläret svarar fortfarande 500 i produktion:** `SMTP_PASS` saknas i Vercel, och `SMTP_HOST`/`SMTP_USER`/`CONTACT_TO` pekar på Gmail tills Oskar själv byter dem. Lösenord läggs inte in av agenten.
 
 - **2026-08-08 (natt, andra passet)** — **Casebilderna på plats, Cal.com och Cloudflare borta.**
   **Bilderna genereras, de ritas inte för hand.** Oskars förslag var att bädda in varje projekt som en levande iframe. Tekniskt möjligt — ingen av de sju sätter `X-Frame-Options` eller `frame-ancestors` — men det hade betytt sju kompletta webbplatser som laddas och hydrerar hos varje besökare, alltså en prestandakostnad tiotals gånger större än de två poäng han just valt att offra för hero-animationen. Dessutom renderar en iframe mot sin egen bredd, så korten hade visat projektens *mobilvyer*, och portföljen hade blivit lika trasig som svagaste projektet. Idén är i stället flyttad till byggtid: `shoot.mjs` kör headless Chrome mot varje live-URL och sparar 1600×1000 WebP i `public/case/`. Samma verkliga sida, renderad en gång i stället för en gång per besökare. Skriptet ligger inte i repot — det är ett engångsverktyg, kör om det när ett projekt ändrats.

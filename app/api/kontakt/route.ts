@@ -99,7 +99,8 @@ export async function POST(request: Request) {
 
   try {
     await transporter.sendMail({
-      // Avsändaren måste vara den autentiserade adressen, annars nekar Gmail.
+      // Avsändaren måste vara den autentiserade adressen, annars nekar SMTP-servern.
+      // DMARC på oskarostlind.se är p=reject: skicka aldrig "från" @oskarostlind.se via en annan server.
       from: `"${name} via ${site.domain}" <${SMTP_USER}>`,
       to: CONTACT_TO ?? site.email,
       replyTo: `"${name}" <${email}>`,
