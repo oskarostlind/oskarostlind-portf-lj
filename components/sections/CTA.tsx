@@ -124,6 +124,7 @@ export default function CTA() {
               {site.email}
             </a>
           </p>
+          <p className="mt-2 text-xs text-[var(--color-dim)]">{t("responseNote")}</p>
         </div>
       </div>
     </section>

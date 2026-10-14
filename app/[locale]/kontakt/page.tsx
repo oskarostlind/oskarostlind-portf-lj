@@ -54,6 +54,7 @@ export default async function ContactPage({
               >
                 {site.email}
               </a>
+              <span className="mt-1 block text-xs text-[var(--color-dim)]">{t("responseNote")}</span>
             </li>
             <li>
               <span className="block text-[var(--color-dim)]">{t("githubLabel")}</span>

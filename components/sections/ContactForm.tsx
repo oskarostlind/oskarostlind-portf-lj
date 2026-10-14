@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { site } from "@/lib/site";
 
 type Status = "idle" | "sending" | "sent" | "error";
@@ -27,6 +27,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export default function ContactForm() {
   const t = useTranslations("contact.form");
   const e = useTranslations("contact.errors");
+  const locale = useLocale();
   const [status, setStatus] = useState<Status>("idle");
 
   const resolver = useCallback<Resolver<Values>>(
@@ -64,7 +65,7 @@ export default function ContactForm() {
       const res = await fetch("/api/kontakt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify({ ...values, locale }),
       });
       if (!res.ok) throw new Error(String(res.status));
       setStatus("sent");

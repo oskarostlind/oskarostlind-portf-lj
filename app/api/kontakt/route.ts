@@ -13,7 +13,40 @@ const schema = z.object({
   message: z.string().trim().min(15).max(5000),
   // Honeypot — fylls bara i av bottar.
   website: z.string().max(0).optional().or(z.literal("")),
+  locale: z.enum(["sv", "en"]).optional(),
 });
+
+/**
+ * Autosvaret går till en adress som vem som helst kan skriva in, så det får
+ * inte kunna bära främmande innehåll (annars blir formuläret en spamkanon mot
+ * tredje part). Därför ekar vi varken meddelandet eller företaget — bara ett
+ * förnamn, och bara om det är ett rent ord utan länkar eller tecken.
+ */
+function safeFirstName(name: string) {
+  const first = name.split(/\s+/)[0] ?? "";
+  return /^[\p{L}'-]{1,30}$/u.test(first) ? first : null;
+}
+
+const autoReply = {
+  sv: {
+    subject: "Tack för ditt meddelande — Oskar Östlind",
+    greeting: (n: string | null) => (n ? `Hej ${n}!` : "Hej!"),
+    lines: [
+      "Tack för att du hörde av dig. Jag har fått ditt meddelande och återkommer inom 1–3 arbetsdagar.",
+      "Vill du lägga till något — en länk, en skiss eller en deadline — svara bara på det här mejlet.",
+    ],
+    signoff: "Vänliga hälsningar",
+  },
+  en: {
+    subject: "Thanks for your message — Oskar Östlind",
+    greeting: (n: string | null) => (n ? `Hi ${n},` : "Hi,"),
+    lines: [
+      "Thanks for reaching out. I've received your message and will get back to you within 1–3 business days.",
+      "Want to add something — a link, a sketch or a deadline? Just reply to this email.",
+    ],
+    signoff: "Best regards",
+  },
+} as const;
 
 /**
  * Enkel rate limiting i minnet: 3 meddelanden per IP per 10 minuter.
@@ -69,7 +102,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid" }, { status: 400 });
   }
 
-  const { name, email, company, budget, message, website } = parsed.data;
+  const { name, email, company, budget, message, website, locale = "sv" } = parsed.data;
 
   // Honeypot ifylld — låtsas att allt gick bra, men skicka ingenting.
   if (website) return NextResponse.json({ ok: true });
@@ -129,9 +162,40 @@ export async function POST(request: Request) {
       `,
     });
 
-    return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Kunde inte skicka kontaktmejl:", error);
     return NextResponse.json({ error: "server" }, { status: 500 });
   }
+
+  // Autosvar till avsändaren. Misslyckas det har förfrågan ändå kommit fram,
+  // så besökaren får ett lyckat svar — felet loggas bara.
+  const copy = autoReply[locale];
+  const greeting = copy.greeting(safeFirstName(name));
+  try {
+    await transporter.sendMail({
+      from: `"${site.name}" <${SMTP_USER}>`,
+      to: email,
+      replyTo: site.email,
+      subject: copy.subject,
+      headers: { "Auto-Submitted": "auto-replied", "X-Auto-Response-Suppress": "All" },
+      text: [greeting, "", ...copy.lines.flatMap((l) => [l, ""]), copy.signoff, site.name, `https://${site.domain}`, site.email].join("\n"),
+      html: `
+        <div style="font-family:system-ui,-apple-system,sans-serif;line-height:1.65;color:#111;max-width:560px">
+          <p style="margin:0 0 16px;font-size:16px">${greeting}</p>
+          ${copy.lines.map((l) => `<p style="margin:0 0 16px">${l}</p>`).join("")}
+          <p style="margin:24px 0 0">${copy.signoff}</p>
+          <div style="margin-top:8px;padding-left:14px;border-left:3px solid #00b8cc">
+            <div style="font-weight:600">${site.name}</div>
+            <a href="https://${site.domain}" style="color:#007c8a;text-decoration:none">${site.domain}</a><br>
+            <a href="mailto:${site.email}" style="color:#007c8a;text-decoration:none">${site.email}</a>
+          </div>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error("Kunde inte skicka autosvar:", error);
+  }
+
+  return NextResponse.json({ ok: true });
 }
+
